@@ -14,7 +14,12 @@ exports.create = async (req, res) => {
 };
 
 exports.retirarLicencia = async (req, res) => {
-    try { await db.query("UPDATE licencias SET estatus = 'Retirada' WHERE id = ?", [req.params.id]); res.json({ success: true }); } 
+    try { 
+        // Se captura el motivo enviado desde el frontend y se almacena temporalmente en "departamento" para el historial
+        const motivo = req.body.motivo || 'Retirada del sistema';
+        await db.query("UPDATE licencias SET estatus = 'Retirada', departamento = ? WHERE id = ?", [motivo, req.params.id]); 
+        res.json({ success: true }); 
+    } 
     catch (err) { res.status(500).json({ error: err.message }); }
 };
 

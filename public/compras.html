@@ -9,21 +9,11 @@
     <style>
         .card-form { padding: 20px 24px; }
         .card-form h3 { font-size: 15px; margin-bottom: 12px; }
-        .card-form input, .card-form select, .card-form textarea {
-            padding: 8px 12px; font-size: 13px; border-radius: 8px; height: 38px;
-        }
+        .card-form input, .card-form select, .card-form textarea { padding: 8px 12px; font-size: 13px; border-radius: 8px; height: 38px; }
         .grid-form { gap: 12px; }
         .custom-file-upload { padding: 10px !important; border-radius: 8px !important; }
-        .modal-fullscreen { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); 
-            display: flex; align-items: center; justify-content: center; z-index: 3000; 
-        }
-        .modal-fullscreen-content { 
-            background: var(--bg-card); width: 90%; max-width: 800px; 
-            border-radius: 20px; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); 
-            border: 1px solid var(--border); animation: slideUp 0.3s ease; 
-        }
+        .modal-fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 3000; }
+        .modal-fullscreen-content { background: var(--bg-card); width: 90%; max-width: 800px; border-radius: 20px; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); border: 1px solid var(--border); animation: slideUp 0.3s ease; }
     </style>
 </head>
 <body>
@@ -34,14 +24,14 @@
         <div class="sidebar-content">
             <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
             <nav class="sidebar-nav">
-                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel Gerencial</button>
+                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel</button>
                 <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
                 <button onclick="navegarA('compras.html')" class="active"><span class="material-icons">shopping_cart</span> Compras</button>
                 <button onclick="navegarA('licencias.html')"><span class="material-icons">vpn_key</span> Licencias</button>
                 <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
                 <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
                 <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
-                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
+                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Deptos</button>
                 <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
                 <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
             </nav>
@@ -51,7 +41,7 @@
     <main class="main-content">
         <h1>Requisiciones y Compras</h1>
         <div class="card-form mt-3">
-            <h3 style="color:var(--primary);">Nueva Requisición Institucional (Generar Orden)</h3>
+            <h3 style="color:var(--primary);">Nueva Requisición Institucional</h3>
             <div class="grid-form">
                 <input type="text" id="c-desc" placeholder="Descripción del bien o servicio">
                 <input type="text" id="c-just" placeholder="Justificación institucional">
@@ -66,7 +56,7 @@
                     <input type="file" id="c-foto" accept="image/*" style="display: none;" onchange="document.getElementById('file-chosen-label').innerText = this.files[0] ? this.files[0].name : 'Seleccionar imagen o archivo...'">
                 </div>
             </div>
-            <button onclick="solicitarCompra()" class="btn-primary mt-3" style="padding: 9px 16px; font-size: 13.5px;">Registrar y Enviar para Aprobación</button>
+            <button onclick="window.solicitarCompra()" class="btn-primary mt-3" style="padding: 9px 16px; font-size: 13.5px;" id="btn-solicitar">Registrar y Enviar para Aprobación</button>
         </div>
         <div class="table-responsive mt-3">
             <table><thead><tr><th>Solicitante</th><th>Descripción / Links</th><th>Presupuesto</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="tabla-compras"></tbody></table>
@@ -74,11 +64,11 @@
     </main>
 </div>
 
-<!-- MODAL EXPEDIENTE PANTALLA COMPLETA -->
+<!-- Modales Compras -->
 <div id="modal-detalle-compra" class="modal-fullscreen hidden">
     <div class="modal-fullscreen-content">
         <div class="flex-between" style="border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:20px;">
-            <h2 style="color:var(--primary); margin:0; display:flex; align-items:center; gap:10px;"><span class="material-icons">receipt_long</span> Expediente de Requisición y Compra</h2>
+            <h2 style="color:var(--primary); margin:0; display:flex; align-items:center; gap:10px;"><span class="material-icons">receipt_long</span> Expediente de Requisición</h2>
             <span class="material-icons" style="cursor:pointer; font-size:28px;" onclick="document.getElementById('modal-detalle-compra').classList.add('hidden')">close</span>
         </div>
         <div id="detalle-compra-body" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; font-size:15px; margin-bottom:30px;"></div>
@@ -92,8 +82,8 @@
         <input type="hidden" id="aprobar-compra-id">
         <input type="file" id="input-factura-file" accept=".pdf,image/*" required style="margin-bottom: 20px;">
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="confirmarAprobarCompraModal()" class="btn-primary">Finalizar y Facturar</button>
-            <button onclick="cerrarModalAprobarCompra()" class="btn-danger">Cancelar</button>
+            <button onclick="window.confirmarAprobarCompraModal()" class="btn-primary" id="btn-aprobar-factura">Finalizar y Facturar</button>
+            <button onclick="document.getElementById('modal-aprobar-compra').classList.add('hidden')" class="btn-danger">Cancelar</button>
         </div>
     </div>
 </div>
@@ -104,8 +94,8 @@
         <input type="hidden" id="rechazo-compra-id">
         <p style="margin-bottom:20px;">¿Está seguro que desea rechazar esta requisición?</p>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="procesarRechazoCompra()" class="btn-danger">Confirmar Rechazo</button>
-            <button onclick="cerrarModalRechazo()" class="btn-warning">Cancelar</button>
+            <button onclick="window.procesarRechazoCompra()" class="btn-danger">Confirmar Rechazo</button>
+            <button onclick="document.getElementById('modal-rechazo').classList.add('hidden')" class="btn-warning">Cancelar</button>
         </div>
     </div>
 </div>
@@ -114,51 +104,127 @@
 <script>
     let cacheComprasGlobal = [];
 
-    async function loadComprasCustom() {
+    window.loadComprasCustom = async function() {
         try {
             const res = await fetch('/api/compras', { headers: authHeaders() });
             cacheComprasGlobal = await res.json();
             const tbody = document.getElementById('tabla-compras');
-            if(!tbody) return;
             const currentRole = (localStorage.getItem('role') || '').toLowerCase();
 
             tbody.innerHTML = cacheComprasGlobal.map(c => `
-                <tr onclick="verDetalleCompra(${c.id})" style="cursor:pointer;" title="Ver expediente completo">
+                <tr onclick="window.verDetalleCompra(${c.id})" style="cursor:pointer;">
                     <td><strong>${c.solicitante || 'Institucional'}</strong><br><small class="text-muted">${c.departamento || '-'}</small></td>
                     <td><strong>${c.descripcion}</strong><br><small>${c.justificacion || '-'}</small></td>
                     <td><strong>$ ${parseFloat(c.presupuesto || 0).toFixed(2)}</strong></td>
                     <td><span class="badge" style="background:${c.estado==='Completado'||c.estado?.includes('Aprobado')?'var(--success)':'var(--warning)'}; color:#fff;">${c.estado || c.estatus || 'Pendiente'}</span></td>
                     <td onclick="event.stopPropagation()">
                         <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            ${(currentRole === 'editor' || currentRole === 'admin') && c.estado === 'Pendiente Supervisor' ? `<button onclick="aprobarSup(${c.id})" class="btn-primary" style="padding:6px 10px; font-size:11px;">Aprobar Sup.</button>` : ''}
-                            ${currentRole === 'admin' && c.estado !== 'Aprobado Compra' && c.estado !== 'Rechazado' && c.estado !== 'Completado' && c.estado !== 'Pendiente Supervisor' ? `<button onclick="abrirModalAprobarCompra(${c.id})" class="btn-primary" style="padding:6px 10px; font-size:11px;">Aprobar Final</button>` : ''}
-                            ${(currentRole === 'editor' || currentRole === 'admin') && c.estado !== 'Rechazado' && c.estado !== 'Completado' ? `<button onclick="abrirModalRechazo(${c.id})" class="btn-danger" style="padding:6px 10px; font-size:11px;">Rechazar</button>` : ''}
+                            ${(currentRole === 'editor' || currentRole === 'admin') && c.estado === 'Pendiente Supervisor' ? `<button onclick="window.aprobarSup(${c.id})" class="btn-primary" style="padding:6px 10px; font-size:11px;">Aprobar Sup.</button>` : ''}
+                            ${currentRole === 'admin' && c.estado !== 'Aprobado Compra' && c.estado !== 'Rechazado' && c.estado !== 'Completado' && c.estado !== 'Pendiente Supervisor' ? `<button onclick="window.abrirModalAprobarCompra(${c.id})" class="btn-primary" style="padding:6px 10px; font-size:11px;">Aprobar Final</button>` : ''}
+                            ${(currentRole === 'editor' || currentRole === 'admin') && c.estado !== 'Rechazado' && c.estado !== 'Completado' ? `<button onclick="window.abrirModalRechazo(${c.id})" class="btn-danger" style="padding:6px 10px; font-size:11px;">Rechazar</button>` : ''}
                         </div>
                     </td>
                 </tr>
             `).join('') || `<tr><td colspan="5" style="text-align:center;">No hay compras registradas.</td></tr>`;
-        } catch(e) {}
-    }
+        } catch(e) { console.error(e); }
+    };
 
-    function verDetalleCompra(id) {
+    window.verDetalleCompra = function(id) {
         const c = cacheComprasGlobal.find(item => item.id == id);
         if(!c) return;
-        const body = document.getElementById('detalle-compra-body');
-        body.innerHTML = `
+        document.getElementById('detalle-compra-body').innerHTML = `
             <div><strong>Solicitante:</strong><br>${c.solicitante || 'General'}</div>
             <div><strong>Departamento:</strong><br>${c.departamento || 'General'}</div>
             <div><strong>Descripción:</strong><br>${c.descripcion}</div>
             <div><strong>Justificación:</strong><br>${c.justificacion || 'N/A'}</div>
             <div><strong>Presupuesto:</strong><br>$ ${parseFloat(c.presupuesto || 0).toFixed(2)}</div>
             <div><strong>Estatus Actual:</strong><br><span class="badge badge-success">${c.estado || c.estatus}</span></div>
-            <div><strong>Enlace de Referencia:</strong><br>${c.link_referencia ? `<a href="${c.link_referencia}" target="_blank">${c.link_referencia}</a>` : 'Ninguno'}</div>
-            <div><strong>Factura Adjunta:</strong><br>${c.factura_adjunta ? `<a href="/uploads/${c.factura_adjunta}" target="_blank">Ver Archivo Factura</a>` : 'No adjunta'}</div>
+            <div><strong>Referencia Web:</strong><br>${c.link_referencia ? `<a href="${c.link_referencia}" target="_blank">Ver Enlace</a>` : 'Ninguno'}</div>
+            <div><strong>Archivos Adjuntos:</strong><br>
+                ${c.foto_adjunta ? `<a href="/uploads/${c.foto_adjunta}" target="_blank" style="color:var(--primary); font-weight:bold;">🖼️ Ver Evidencia Inicial</a><br>` : ''}
+                ${c.factura_adjunta ? `<a href="/uploads/${c.factura_adjunta}" target="_blank" style="color:var(--success); font-weight:bold;">🧾 Ver Factura Final</a>` : ''}
+                ${!c.foto_adjunta && !c.factura_adjunta ? 'Sin adjuntos' : ''}
+            </div>
         `;
         document.getElementById('modal-detalle-compra').classList.remove('hidden');
-    }
+    };
 
-    document.addEventListener("DOMContentLoaded", () => { loadComprasCustom(); });
+    window.solicitarCompra = async function() {
+        const btn = document.getElementById('btn-solicitar');
+        const desc = document.getElementById('c-desc').value.trim();
+        const just = document.getElementById('c-just').value.trim();
+        const pres = document.getElementById('c-pres').value.trim();
+        const link = document.getElementById('c-link').value.trim();
+        const foto = document.getElementById('c-foto');
+
+        if (!desc || !pres) return mostrarNotificacion("Descripción y presupuesto son obligatorios.", "warning");
+
+        const formData = new FormData();
+        formData.append('descripcion', desc);
+        formData.append('justificacion', just);
+        formData.append('presupuesto', pres);
+        if (link) formData.append('link_referencia', link);
+        if (foto.files.length > 0) formData.append('foto', foto.files[0]);
+
+        try {
+            btn.innerText = "Enviando..."; btn.disabled = true;
+            // ATENCIÓN: Para FormData NO se envía Content-Type
+            const res = await fetch('/api/compras', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }, body: formData });
+            if (res.ok) {
+                mostrarNotificacion("Requisición registrada.", "success");
+                document.getElementById('c-desc').value = ''; document.getElementById('c-just').value = '';
+                document.getElementById('c-pres').value = ''; document.getElementById('c-link').value = '';
+                document.getElementById('c-foto').value = ''; document.getElementById('file-chosen-label').innerText = 'Seleccionar imagen o archivo...';
+                window.loadComprasCustom();
+            } else { mostrarNotificacion("Error al registrar.", "error"); }
+        } catch (e) { mostrarNotificacion("Error de conexión.", "error"); }
+        finally { btn.innerText = "Registrar y Enviar para Aprobación"; btn.disabled = false; }
+    };
+
+    window.aprobarSup = async function(id) {
+        if (!confirm("¿Aprobar requisición y enviarla a estado de facturación?")) return;
+        try {
+            const res = await fetch(`/api/compras/${id}/aprobar-sup`, { method: 'PUT', headers: authHeaders() });
+            if (res.ok) { mostrarNotificacion("Aprobada por Supervisor.", "success"); window.loadComprasCustom(); }
+        } catch (e) {}
+    };
+
+    window.abrirModalAprobarCompra = function(id) {
+        document.getElementById('aprobar-compra-id').value = id;
+        document.getElementById('input-factura-file').value = '';
+        document.getElementById('modal-aprobar-compra').classList.remove('hidden');
+    };
+
+    window.confirmarAprobarCompraModal = async function() {
+        const id = document.getElementById('aprobar-compra-id').value;
+        const file = document.getElementById('input-factura-file');
+        if(file.files.length === 0) return mostrarNotificacion("La factura es obligatoria.", "warning");
+
+        const formData = new FormData(); formData.append('factura', file.files[0]);
+        const btn = document.getElementById('btn-aprobar-factura');
+
+        try {
+            btn.innerText = "Procesando..."; btn.disabled = true;
+            const res = await fetch(`/api/compras/${id}/aprobar-compra`, { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }, body: formData });
+            if (res.ok) {
+                mostrarNotificacion("Compra finalizada y facturada.", "success");
+                document.getElementById('modal-aprobar-compra').classList.add('hidden');
+                window.loadComprasCustom();
+            }
+        } catch (e) {}
+        finally { btn.innerText = "Finalizar y Facturar"; btn.disabled = false; }
+    };
+
+    window.abrirModalRechazo = function(id) { document.getElementById('rechazo-compra-id').value = id; document.getElementById('modal-rechazo').classList.remove('hidden'); };
+    window.procesarRechazoCompra = async function() {
+        const id = document.getElementById('rechazo-compra-id').value;
+        try {
+            const res = await fetch(`/api/compras/${id}/rechazar`, { method: 'PUT', headers: authHeaders() });
+            if (res.ok) { mostrarNotificacion("Rechazada exitosamente.", "success"); document.getElementById('modal-rechazo').classList.add('hidden'); window.loadComprasCustom(); }
+        } catch (e) {}
+    };
+
+    document.addEventListener("DOMContentLoaded", () => { window.loadComprasCustom(); });
 </script>
-<script src="/js/finanzas.js"></script>
 </body>
 </html>

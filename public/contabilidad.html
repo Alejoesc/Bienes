@@ -23,7 +23,7 @@
                 <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
                 <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
                 <button onclick="navegarA('licencias.html')"><span class="material-icons">vpn_key</span> Licencias</button>
-                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden active"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
+                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="active"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
                 <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
                 <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
                 <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
@@ -34,52 +34,111 @@
         </div>
     </aside>
     <main class="main-content">
-        <h1>Registro Contable</h1>
-        
-        <!-- Filtros, Buscador y Exportadores -->
+        <h1>Registro Contable Oficial</h1>
         <div class="card-filters mt-3">
             <div style="flex: 1; min-width: 200px;">
                 <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 3px;">Buscador:</label>
-                <input type="text" id="filtro-texto" onkeyup="filtrarContabilidad()" placeholder="Buscar descripción, ID..." style="width: 100%;">
+                <input type="text" id="filtro-texto" onkeyup="window.filtrarContabilidad()" placeholder="Buscar descripción, ID..." style="width: 100%;">
             </div>
             <div>
                 <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 3px;">Desde:</label>
-                <input type="date" id="filtro-desde" onchange="filtrarContabilidad()">
+                <input type="date" id="filtro-desde" onchange="window.filtrarContabilidad()">
             </div>
             <div>
                 <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 3px;">Hasta:</label>
-                <input type="date" id="filtro-hasta" onchange="filtrarContabilidad()">
+                <input type="date" id="filtro-hasta" onchange="window.filtrarContabilidad()">
             </div>
             <div style="display: flex; gap: 8px; align-items: flex-end; margin-top: auto;">
-                <button onclick="exportarExcelContabilidad()" class="btn-primary" style="padding: 8px 14px; font-size: 12.5px; display: flex; align-items: center; gap: 4px;" title="Exportar a Excel"><span class="material-icons" style="font-size: 16px;">table_chart</span> Excel</button>
-                <button onclick="exportarPDFContabilidad()" class="btn-danger" style="padding: 8px 14px; font-size: 12.5px; display: flex; align-items: center; gap: 4px;" title="Exportar a PDF"><span class="material-icons" style="font-size: 16px;">picture_as_pdf</span> PDF</button>
+                <button onclick="window.exportarExcelContabilidad()" class="btn-primary" style="background:var(--success); padding: 8px 14px; font-size: 12.5px;"><span class="material-icons">table_chart</span> Excel (.xls)</button>
+                <button onclick="window.exportarPDFContabilidad()" class="btn-danger" style="padding: 8px 14px; font-size: 12.5px;"><span class="material-icons">picture_as_pdf</span> PDF Oficial</button>
             </div>
         </div>
-
         <div class="table-responsive mt-3">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID Compra</th>
-                        <th>Descripción</th>
-                        <th>Monto Ejecutado ($)</th>
-                        <th>Estatus</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-contabilidad"></tbody>
-            </table>
+            <table><thead><tr><th>ID Compra</th><th>Descripción</th><th>Monto Ejecutado ($)</th><th>Estatus</th></tr></thead><tbody id="tabla-contabilidad"></tbody></table>
         </div>
     </main>
 </div>
 
 <script src="/js/app.js"></script>
-<script src="/js/finanzas.js"></script>
 <script>
+    let cacheContabilidadGlobal = [];
+    let datosContabilidadFiltradosActuales = [];
+
     document.addEventListener("DOMContentLoaded", async () => {
-        if(typeof cargarDatosContabilidadCustom === 'function') {
-            await cargarDatosContabilidadCustom();
-        }
+        try {
+            const res = await fetch('/api/contabilidad', { headers: authHeaders() });
+            if(res.ok) {
+                cacheContabilidadGlobal = await res.json();
+                window.filtrarContabilidad();
+            }
+        } catch(e) { console.error("Error contabilidad", e); }
     });
+
+    window.filtrarContabilidad = function() {
+        const texto = (document.getElementById('filtro-texto').value || '').toLowerCase();
+        const desde = document.getElementById('filtro-desde').value;
+        const hasta = document.getElementById('filtro-hasta').value;
+
+        datosContabilidadFiltradosActuales = cacheContabilidadGlobal.filter(c => {
+            const coincideTexto = (c.descripcion || '').toLowerCase().includes(texto) || String(c.id).includes(texto);
+            const fechaRegistro = c.created_at ? c.created_at.split('T')[0] : '';
+            let coincideFecha = true;
+            if(desde && fechaRegistro && fechaRegistro < desde) coincideFecha = false;
+            if(hasta && fechaRegistro && fechaRegistro > hasta) coincideFecha = false;
+            return coincideTexto && coincideFecha;
+        });
+
+        const tbody = document.getElementById('tabla-contabilidad');
+        tbody.innerHTML = datosContabilidadFiltradosActuales.map(c => `
+            <tr style="cursor: default;">
+                <td><strong>#${c.id}</strong></td>
+                <td>${c.descripcion || '-'}</td>
+                <td><strong>$ ${parseFloat(c.presupuesto || c.monto || 0).toFixed(2)}</strong></td>
+                <td><span class="badge" style="background:var(--success); color:#fff;">${c.estado || c.estatus || 'Completado'}</span></td>
+            </tr>
+        `).join('') || `<tr><td colspan="4" style="text-align:center;">No hay registros disponibles.</td></tr>`;
+    };
+
+    window.exportarExcelContabilidad = function() {
+        const datos = datosContabilidadFiltradosActuales.length > 0 ? datosContabilidadFiltradosActuales : cacheContabilidadGlobal;
+        if(datos.length === 0) return mostrarNotificacion("No hay datos para exportar.", "warning");
+        
+        const filas = datos.map(c => `<tr><td align="center">#${c.id}</td><td>${c.descripcion || ''}</td><td align="right">${parseFloat(c.presupuesto||c.monto||0).toFixed(2)}</td><td align="center">${c.estado||'Completado'}</td></tr>`).join('');
+        
+        const tablaExcel = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head><body>
+                <table border="1" cellpadding="5" cellspacing="0">
+                    <thead>
+                        <tr><th colspan="4" style="font-size:18px; font-weight:bold; background-color:#1e3a8a; color:#ffffff; height:40px;">Reporte Contable Institucional SGBN</th></tr>
+                        <tr style="background-color: #f1f5f9; font-weight: bold; height: 30px;"><th>ID Compra</th><th>Descripción</th><th>Monto Ejecutado ($)</th><th>Estatus</th></tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            </body></html>
+        `;
+
+        const blob = new Blob([tablaExcel], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `Reporte_Contable_${new Date().toISOString().split('T')[0]}.xls`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        mostrarNotificacion("Reporte XLS generado exitosamente.", "success");
+    };
+
+    window.exportarPDFContabilidad = function() {
+        const datos = datosContabilidadFiltradosActuales.length > 0 ? datosContabilidadFiltradosActuales : cacheContabilidadGlobal;
+        if(datos.length === 0) return mostrarNotificacion("No hay datos en PDF.", "warning");
+        const win = window.open('', '_blank');
+        const filas = datos.map(c => `<tr><td>#${c.id}</td><td>${c.descripcion}</td><td>$ ${parseFloat(c.presupuesto||0).toFixed(2)}</td><td>${c.estado||'Completado'}</td></tr>`).join('');
+        win.document.write(`
+            <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Contable</title>
+            <style>body{font-family:sans-serif;margin:30px;color:#111;font-size:12px;} .header{text-align:center;margin-bottom:25px;border-bottom:2px solid #333;padding-bottom:15px;} table{width:100%;border-collapse:collapse;margin-top:15px;} th,td{border:1px solid #ccc;padding:8px;text-align:left;} th{background-color:#f1f5f9;text-transform:uppercase;font-size:11px;}</style>
+            </head><body><div class="header"><h2>REPÚBLICA BOLIVARIANA DE VENEZUELA</h2><h4>SISTEMA DE GESTIÓN DE BIENES NACIONALES</h4></div>
+            <table><thead><tr><th>ID</th><th>Descripción</th><th>Monto ($)</th><th>Estatus</th></tr></thead><tbody>${filas}</tbody></table>
+            <script>window.onload = function(){ window.print(); };<\/script></body></html>
+        `);
+        win.document.close();
+    };
 </script>
 </body>
 </html>

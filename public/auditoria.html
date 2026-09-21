@@ -27,40 +27,27 @@
                 <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden active"><span class="material-icons">policy</span> Auditoría</button>
                 <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
             </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir</button></div>
+            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%;"><span class="material-icons">logout</span> Salir</button></div>
         </div>
     </aside>
     <main class="main-content">
         <h1>Auditoría Institucional Avanzada</h1>
-        
         <div class="audit-controls mt-3" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:15px; align-items:flex-end;">
             <div style="display:flex; gap:15px; align-items:flex-end; flex-wrap:wrap;">
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:5px;">Desde:</label>
-                    <div class="modern-date-picker"><span class="material-icons">event</span><input type="date" id="filtro-desde"></div>
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:5px;">Hasta:</label>
-                    <div class="modern-date-picker"><span class="material-icons">event</span><input type="date" id="filtro-hasta"></div>
-                </div>
-                <button onclick="filtrarAuditoriaFechas()" class="btn-primary" style="height:44px;"><span class="material-icons">filter_list</span> Filtrar</button>
+                <div><label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:5px;">Desde:</label><div class="modern-date-picker"><input type="date" id="filtro-desde"></div></div>
+                <div><label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:5px;">Hasta:</label><div class="modern-date-picker"><input type="date" id="filtro-hasta"></div></div>
+                <button onclick="window.filtrarAuditoriaFechas()" class="btn-primary" style="height:44px;"><span class="material-icons">filter_list</span> Filtrar</button>
             </div>
             <div style="display:flex; gap:10px;">
-                <button onclick="generarPDFAuditoriaRango()" class="btn-primary" style="height:44px;"><span class="material-icons">picture_as_pdf</span> Exportar PDF</button>
-                <button onclick="exportarExcelAuditoriaRango()" class="btn-primary" style="background:var(--success); height:44px;"><span class="material-icons">table_chart</span> Exportar Excel</button>
+                <button onclick="window.generarPDFAuditoriaRango()" class="btn-primary" style="height:44px; background:#e11d48;"><span class="material-icons">picture_as_pdf</span> Reporte Formal PDF</button>
             </div>
         </div>
-
         <div class="table-responsive mt-3">
-            <table>
-                <thead><tr><th>Fecha / Hora</th><th>Usuario</th><th>IP / Disp.</th><th>Acción</th><th>Detalle</th></tr></thead>
-                <tbody id="tabla-auditoria"></tbody>
-            </table>
+            <table><thead><tr><th>Fecha / Hora</th><th>Usuario</th><th>IP / Disp.</th><th>Acción</th><th>Detalle</th></tr></thead><tbody id="tabla-auditoria"></tbody></table>
         </div>
     </main>
 </div>
 <script src="/js/app.js"></script>
-<script src="/js/system.js"></script>
 <script>
     let cacheAuditoriaGlobal = [];
 
@@ -68,14 +55,19 @@
         try {
             const res = await fetch('/api/auditoria', { headers: authHeaders() });
             cacheAuditoriaGlobal = await res.json();
-            renderAuditoriaTabla(cacheAuditoriaGlobal);
+            window.filtrarAuditoriaFechas();
         } catch(e) {}
     });
 
-    function renderAuditoriaTabla(data) {
+    window.filtrarAuditoriaFechas = function() {
+        const desde = document.getElementById('filtro-desde').value;
+        const hasta = document.getElementById('filtro-hasta').value;
+        let filtrados = cacheAuditoriaGlobal;
+        if(desde) filtrados = filtrados.filter(i => (i.created_at || i.fecha || '').split('T')[0] >= desde);
+        if(hasta) filtrados = filtrados.filter(i => (i.created_at || i.fecha || '').split('T')[0] <= hasta);
+        
         const tbody = document.getElementById('tabla-auditoria');
-        if(!tbody) return;
-        tbody.innerHTML = data.map(a => `
+        tbody.innerHTML = filtrados.map(a => `
             <tr>
                 <td>${a.created_at || a.fecha}</td>
                 <td><strong>${a.usuario}</strong></td>
@@ -84,92 +76,56 @@
                 <td>${a.detalle}</td>
             </tr>
         `).join('') || `<tr><td colspan="5" style="text-align:center;">No hay registros de auditoría.</td></tr>`;
-    }
+    };
 
-    function filtrarAuditoriaFechas() {
+    window.generarPDFAuditoriaRango = async function() {
         const desde = document.getElementById('filtro-desde').value;
         const hasta = document.getElementById('filtro-hasta').value;
-        let filtrados = cacheAuditoriaGlobal;
-        if(desde) filtrados = filtrados.filter(i => (i.created_at || i.fecha || '').split('T')[0] >= desde);
-        if(hasta) filtrados = filtrados.filter(i => (i.created_at || i.fecha || '').split('T')[0] <= hasta);
-        renderAuditoriaTabla(filtrados);
-    }
+        let datos = cacheAuditoriaGlobal;
+        if(desde) datos = datos.filter(i => (i.created_at || i.fecha || '').split('T')[0] >= desde);
+        if(hasta) datos = datos.filter(i => (i.created_at || i.fecha || '').split('T')[0] <= hasta);
 
-    function obtenerDatosFiltradosRango() {
-        const desde = document.getElementById('filtro-desde').value;
-        const hasta = document.getElementById('filtro-hasta').value;
-        let filtrados = cacheAuditoriaGlobal;
-        if(desde) filtrados = filtrados.filter(i => (i.created_at || i.fecha || '').split('T')[0] >= desde);
-        if(hasta) filtrados = filtrados.filter(i => (i.created_at || i.fecha || '').split('T')[0] <= hasta);
-        return filtrados;
-    }
-
-    async function generarPDFAuditoriaRango() {
-        const datos = obtenerDatosFiltradosRango();
-        if(datos.length === 0) return mostrarNotificacion("No hay registros en el rango seleccionado.", "warning");
-        
-        await fetch('/api/auditoria/log', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ accion: 'REPORTE_PDF', detalle: 'Exportación PDF de auditoría por rango' }) });
+        if(datos.length === 0) return mostrarNotificacion("No hay registros en el rango.", "warning");
+        await fetch('/api/auditoria/log', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ accion: 'REPORTE_PDF', detalle: 'Exportación de auditoría en PDF' }) });
 
         const win = window.open('', '_blank');
-        const filas = datos.map(i => `<tr><td>${i.created_at||i.fecha}</td><td>${i.usuario}</td><td>${i.ip}</td><td>${i.accion}</td><td>${i.detalle}</td></tr>`).join('');
+        const filas = datos.map(i => `<tr><td>${i.created_at||i.fecha}</td><td><strong>${i.usuario}</strong></td><td>${i.ip}</td><td><span class="badge">${i.accion}</span></td><td>${i.detalle}</td></tr>`).join('');
+        
         win.document.write(`
-            <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte de Auditoría</title>
-            <style>body{font-family:sans-serif;margin:25px;font-size:12px;} table{width:100%;border-collapse:collapse;margin-top:15px;} th,td{border:1px solid #ccc;padding:8px;text-align:left;} th{background:#f1f5f9;}</style>
-            </head><body><h2>Reporte de Auditoría Institucional</h2><p><b>Registros:</b> ${datos.length}</p>
-            <table><thead><tr><th>Fecha</th><th>Usuario</th><th>IP</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>${filas}</tbody></table>
-            <script>window.onload=()=>window.print();<\/script></body></html>
+            <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Auditoría Oficial</title>
+            <style>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 40px; color: #333; font-size: 12px; }
+                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 30px; }
+                .header-text { text-align: right; }
+                .header-text h2 { margin: 0; color: #1e3a8a; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+                .header-text p { margin: 5px 0 0 0; color: #64748b; font-size: 13px; }
+                .logo { font-size: 32px; font-weight: 800; color: #1e3a8a; border: 3px solid #1e3a8a; padding: 10px 15px; border-radius: 50%; display: inline-block; }
+                .summary { background: #f8fafc; padding: 15px; border-left: 4px solid #3b82f6; margin-bottom: 25px; border-radius: 4px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th { background-color: #1e3a8a; color: white; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+                td { border-bottom: 1px solid #e2e8f0; padding: 10px 12px; }
+                tr:nth-child(even) td { background-color: #f8fafc; }
+                .badge { background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+                @media print { button { display: none; } body { margin: 0; } }
+            </style>
+            </head><body>
+                <div class="header">
+                    <div class="logo">BCV</div>
+                    <div class="header-text">
+                        <h2>Reporte de Auditoría de Sistemas</h2>
+                        <p>Plataforma Institucional SGBN</p>
+                    </div>
+                </div>
+                <div class="summary">
+                    <strong>Fecha de Emisión:</strong> ${new Date().toLocaleDateString('es-VE')}<br>
+                    <strong>Total de Movimientos Registrados:</strong> ${datos.length} incidentes/acciones.
+                </div>
+                <table><thead><tr><th>Fecha / Hora</th><th>Usuario</th><th>IP Origen</th><th>Tipo de Acción</th><th>Detalles del Evento</th></tr></thead><tbody>${filas}</tbody></table>
+                <script>window.onload=()=>window.print();<\/script>
+            </body></html>
         `);
         win.document.close();
-    }
-
-    async function exportarExcelAuditoriaRango() {
-        const datos = obtenerDatosFiltradosRango();
-        if(datos.length === 0) return mostrarNotificacion("No hay registros en el rango.", "warning");
-
-        await fetch('/api/auditoria/log', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ accion: 'REPORTE_EXCEL', detalle: 'Exportación Excel de auditoría por rango' }) });
-
-        const filas = datos.map(i => `
-            <tr>
-                <td>${i.created_at || i.fecha || ''}</td>
-                <td>${i.usuario || ''}</td>
-                <td>${i.ip || ''}</td>
-                <td>${i.accion || ''}</td>
-                <td>${i.detalle || ''}</td>
-            </tr>
-        `).join('');
-
-        const tablaExcel = `
-            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-            <head><meta charset="UTF-8"></head>
-            <body>
-                <table border="1">
-                    <thead>
-                        <tr style="background-color: #f1f5f9; font-weight: bold;">
-                            <th>Fecha / Hora</th>
-                            <th>Usuario</th>
-                            <th>IP / Disp.</th>
-                            <th>Acción</th>
-                            <th>Detalle</th>
-                        </tr>
-                    </thead>
-                    <tbody>${filas}</tbody>
-                </table>
-            </body>
-            </html>
-        `;
-
-        const blob = new Blob([tablaExcel], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `auditoria_${new Date().toISOString().split('T')[0]}.xls`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        mostrarNotificacion("Reporte Excel exportado exitosamente.", "success");
-    }
+    };
 </script>
 </body>
 </html>

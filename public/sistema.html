@@ -7,10 +7,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .file-upload-wrapper {
-            border: 2px dashed var(--border); border-radius: 12px; padding: 25px;
-            text-align: center; cursor: pointer; background: var(--bg-main); transition: all 0.2s ease; margin-bottom: 15px;
-        }
+        .file-upload-wrapper { border: 2px dashed var(--border); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; background: var(--bg-main); transition: all 0.2s ease; margin-bottom: 15px; }
         .file-upload-wrapper:hover { border-color: var(--primary); background: rgba(37, 99, 235, 0.03); }
         .format-box { background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 15px; font-size: 12px; color: var(--text-muted); }
         .format-box code { background: var(--table-header); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: monospace; }
@@ -18,7 +15,6 @@
 </head>
 <body>
 <div id="toast-container" class="sgbn-toast-container"></div>
-<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar Tema"><span class="material-icons">dark_mode</span></button>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-header"><div style="display:flex; align-items:center; gap:10px;"><span class="material-icons">inventory_2</span><h2 style="margin:0; font-size:20px;">SGBN</h2></div></div>
@@ -42,42 +38,112 @@
     <main class="main-content">
         <h1>Mantenimiento y Respaldos del Sistema</h1>
         <div class="stats-grid mt-3">
-            <!-- Tarjeta 1: Importar Excel -->
+            <!-- Importar Excel -->
             <div class="card-form" style="margin:0;">
                 <h3 style="margin-bottom:15px; color:var(--primary);">Importar Inventario Excel</h3>
                 <div class="file-upload-wrapper" onclick="document.getElementById('file-import').click()">
                     <span class="material-icons" style="font-size:36px; color:var(--primary);">cloud_upload</span>
                     <p id="file-name-display" style="font-size:13px; font-weight:600; margin-top:8px;">Haga clic para seleccionar archivo Excel (.xlsx)</p>
                 </div>
-                <input type="file" id="file-import" accept=".xlsx, .xls" style="display:none;" onchange="actualizarNombreArchivo(this)">
-                <div class="format-box">
-                    <b>Formato compatible (1ra Fila):</b><br>
-                    <code>codigo</code> | <code>descripcion</code> | <code>serial</code> | <code>departamento</code> | <code>valor</code>
-                </div>
-                <button onclick="importarExcel()" class="btn-warning mt-3" style="width:100%; justify-content:center;">Procesar e Importar Datos</button>
+                <input type="file" id="file-import" accept=".xlsx, .xls" style="display:none;" onchange="document.getElementById('file-name-display').innerText = this.files[0] ? this.files[0].name : 'Haga clic para seleccionar archivo'">
+                <div class="format-box"><b>Formato compatible (1ra Fila):</b><br><code>codigo</code> | <code>descripcion</code> | <code>serial</code> | <code>departamento</code> | <code>valor</code></div>
+                <button onclick="window.importarExcel()" id="btn-import-excel" class="btn-warning mt-3" style="width:100%; justify-content:center;">Procesar e Importar Datos</button>
             </div>
             
-            <!-- Tarjeta 2: Exportaciones y Respaldos SQL/Excel -->
+            <!-- Exportar y Respaldos SQL -->
             <div class="card-form" style="margin:0;">
                 <h3 style="margin-bottom:15px; color:var(--primary);">Exportaciones y Respaldos</h3>
-                <button onclick="descargarExportExcel()" class="btn-primary mt-3" style="width:100%; justify-content:center;"><span class="material-icons">table_chart</span> Descargar Inventario (Excel)</button>
-                <button onclick="descargarBackupSQL()" class="btn-primary mt-3" style="background:var(--success); width:100%; justify-content:center;"><span class="material-icons">storage</span> Respaldo Completo Base de Datos (SQL)</button>
+                <button onclick="window.descargarExportExcel()" class="btn-primary mt-3" style="width:100%; justify-content:center;"><span class="material-icons">table_chart</span> Descargar Inventario (.xlsx)</button>
+                <button onclick="window.descargarBackupSQL()" class="btn-primary mt-3" style="background:var(--success); width:100%; justify-content:center;"><span class="material-icons">storage</span> Generar Respaldo Base de Datos (.sql)</button>
                 
-                <!-- NUEVO APARTADO: Cargar / Restaurar Base de Datos SQL -->
                 <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
-                    <h4 style="margin-bottom: 10px; color: var(--danger); font-size: 14px;">Restaurar Base de Datos</h4>
+                    <h4 style="margin-bottom: 10px; color: var(--danger); font-size: 14px;">Restaurar Base de Datos desde Respaldo</h4>
                     <div class="file-upload-wrapper" onclick="document.getElementById('file-restore-sql').click()" style="padding: 15px; margin-bottom: 10px;">
                         <span class="material-icons" style="font-size: 28px; color: var(--danger);">settings_backup_restore</span>
                         <p id="sql-name-display" style="font-size: 12px; font-weight: 600; margin-top: 5px;">Seleccionar archivo de respaldo (.sql)</p>
                     </div>
-                    <input type="file" id="file-restore-sql" accept=".sql" style="display:none;" onchange="actualizarNombreSQL(this)">
-                    <button onclick="restarurarBackupSQL()" class="btn-danger" style="width:100%; justify-content:center; padding: 10px;"><span class="material-icons">upload</span> Cargar y Restaurar BD</button>
+                    <input type="file" id="file-restore-sql" accept=".sql" style="display:none;" onchange="document.getElementById('sql-name-display').innerText = this.files[0] ? this.files[0].name : 'Seleccionar archivo de respaldo'">
+                    <button onclick="window.restarurarBackupSQL()" id="btn-restore-sql" class="btn-danger" style="width:100%; justify-content:center; padding: 10px;"><span class="material-icons">upload</span> Cargar y Restaurar BD</button>
                 </div>
             </div>
         </div>
     </main>
 </div>
 <script src="/js/app.js"></script>
-<script src="/js/system.js"></script>
+<script>
+    window.descargarExportExcel = async function() {
+        try {
+            const res = await fetch('/api/export/bienes', { headers: authHeaders() });
+            if (!res.ok) return mostrarNotificacion("Error al exportar inventario.", "error");
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `inventario_bienes_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
+            mostrarNotificacion("Inventario exportado con éxito.", "success");
+        } catch(e) { mostrarNotificacion("Error al exportar.", "error"); }
+    };
+
+    window.descargarBackupSQL = async function() {
+        try {
+            const res = await fetch('/api/backup', { headers: authHeaders() });
+            if (!res.ok) return mostrarNotificacion("Error al generar respaldo.", "error");
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `sgbn_backup_${new Date().toISOString().split('T')[0]}.sql`;
+            document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
+            mostrarNotificacion("Respaldo descargado.", "success");
+        } catch (e) { mostrarNotificacion("Error de conexión.", "error"); }
+    };
+
+    window.importarExcel = async function() {
+        const input = document.getElementById('file-import');
+        if (!input.files || input.files.length === 0) return mostrarNotificacion("Seleccione un archivo Excel primero.", "warning");
+        const btn = document.getElementById('btn-import-excel');
+        
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        try {
+            btn.innerText = "Importando datos..."; btn.disabled = true;
+            // IMPORTANTE: NO SE USA authHeaders() AQUÍ PARA EVITAR DESTRUIR EL FORMDATA
+            const res = await fetch('/api/import/bienes', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData
+            });
+
+            if (res.ok) {
+                mostrarNotificacion("Inventario importado correctamente.", "success");
+                input.value = ''; document.getElementById('file-name-display').innerText = "Haga clic para seleccionar archivo Excel (.xlsx)";
+            } else { mostrarNotificacion("Error al procesar el archivo.", "error"); }
+        } catch (e) { mostrarNotificacion("Error de conexión.", "error"); }
+        finally { btn.innerText = "Procesar e Importar Datos"; btn.disabled = false; }
+    };
+
+    window.restarurarBackupSQL = async function() {
+        const input = document.getElementById('file-restore-sql');
+        if (!input.files || input.files.length === 0) return mostrarNotificacion("Seleccione el respaldo SQL.", "warning");
+        if (!confirm("Alerta: Esto borrará la información actual y la sustituirá por la del respaldo. ¿Desea continuar?")) return;
+        
+        const btn = document.getElementById('btn-restore-sql');
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        try {
+            btn.innerText = "Restaurando BD..."; btn.disabled = true;
+            const res = await fetch('/api/restore', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData
+            });
+
+            if (res.ok) {
+                mostrarNotificacion("Base de datos restaurada. Recargando el sistema...", "success");
+                setTimeout(() => { window.location.reload(); }, 2000);
+            } else { mostrarNotificacion("Error en la restauración del archivo.", "error"); }
+        } catch (e) { mostrarNotificacion("Error de conexión.", "error"); }
+        finally { btn.innerText = "Cargar y Restaurar BD"; btn.disabled = false; }
+    };
+</script>
 </body>
 </html>

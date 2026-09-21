@@ -8,10 +8,20 @@ exports.getAll = async (req, res) => {
 
 exports.create = async (req, res) => {
     try {
-        const { codigo_bien, descripcion, serial, departamento, valor } = req.body;
-        await db.query("INSERT INTO bienes (codigo_bien, codigo, descripcion, serial, departamento, estado, valor, fecha_incorporacion, estatus) VALUES (?, ?, ?, ?, ?, 'Activo', ?, CURDATE(), 'Activo')", [codigo_bien, codigo_bien, descripcion, serial, departamento, valor || 0.00]);
+        const { codigo_bien, descripcion, serial, departamento, valor, imagenes } = req.body;
+        
+        // Convertir el arreglo de imágenes (Base64) a un string JSON para guardarlo en la BD
+        const imagenesJson = (imagenes && imagenes.length > 0) ? JSON.stringify(imagenes) : null;
+
+        await db.query(
+            "INSERT INTO bienes (codigo_bien, codigo, descripcion, serial, departamento, estado, valor, imagenes, fecha_incorporacion, estatus) VALUES (?, ?, ?, ?, ?, 'Activo', ?, ?, CURDATE(), 'Activo')", 
+            [codigo_bien, codigo_bien, descripcion, serial, departamento, valor || 0.00, imagenesJson]
+        );
+        
         res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
 };
 
 exports.getStats = async (req, res) => {

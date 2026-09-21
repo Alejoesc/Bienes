@@ -225,7 +225,7 @@ function cerrarModalDetalle() {
 }
 
 // ----------------------------------------------------
-// ACCIONES Y MODALES (Traspaso corregido)
+// ACCIONES Y MODALES
 // ----------------------------------------------------
 
 window.abrirTraspasoModal = function(id) {
