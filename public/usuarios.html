@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head><meta charset="UTF-8"><title>SGBN - Gestión de Usuarios y Permisos</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"><link rel="stylesheet" href="/css/style.css">
+<style>
+    .permisos-container { border: 1px solid var(--border); border-radius: 10px; padding: 15px; background: var(--bg-main); max-height: 180px; overflow-y: auto; margin-top: 10px; }
+    .permiso-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--text-main); cursor: pointer; }
+    .permiso-item input { width: 16px; height: 16px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="toast-container" class="sgbn-toast-container"></div>
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header"><div style="display:flex; align-items:center; gap:10px;"><span class="material-icons">inventory_2</span><h2 style="margin:0; font-size:20px;">SGBN</h2></div></div>
+        <div class="sidebar-content">
+            <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
+            <nav class="sidebar-nav">
+                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel Gerencial</button>
+                <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
+                <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
+                <button onclick="navegarA('licencias.html')"><span class="material-icons">vpn_key</span> Licencias</button>
+                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
+                <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
+                <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden active"><span class="material-icons">security</span> Usuarios</button>
+                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
+                <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
+                <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
+            </nav>
+            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir</button></div>
+        </div>
+    </aside>
+    <main class="main-content">
+        <div class="flex-between"><h1>Gestión de Usuarios y Accesos</h1><button onclick="abrirModalUsuario()" class="btn-primary">Añadir Usuario</button></div>
+        <div class="table-responsive mt-3"><table><thead><tr><th>Cédula</th><th>Nombre</th><th>Depto / Rol</th><th>Acciones</th></tr></thead><tbody id="tabla-usuarios"></tbody></table></div>
+    </main>
+</div>
+
+<!-- MODAL DE DESCRIPCIÓN Y EXPEDIENTE DE USUARIO -->
+<div id="modal-detalle-usuario" class="modal hidden">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="flex-between" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px;">
+            <h3 style="color: var(--primary); margin: 0; display: flex; align-items: center; gap: 8px;"><span class="material-icons">account_box</span> Descripción y Expediente de Usuario</h3>
+            <span class="material-icons" style="cursor: pointer; font-size: 24px; color: var(--text-muted);" onclick="cerrarModalDetalleUsuario()">close</span>
+        </div>
+        <div id="detalle-usuario-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; margin-bottom: 25px;"></div>
+        <div style="display: flex; justify-content: flex-end;">
+            <button onclick="cerrarModalDetalleUsuario()" class="btn-primary">Cerrar Ventana</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE EDICIÓN / CREACIÓN DE USUARIO -->
+<div id="modal-usuario" class="modal hidden">
+    <div class="modal-content" style="max-width: 550px;">
+        <h3 style="margin-bottom:15px; color:var(--primary); display:flex; align-items:center; gap:8px;"><span class="material-icons">security</span> Configuración de Usuario y Roles</h3>
+        <input type="hidden" id="u-id">
+        <div class="grid-form">
+            <input type="text" id="u-cedula" placeholder="Cédula">
+            <input type="text" id="u-nombre-comp" placeholder="Nombre Completo">
+            <input type="text" id="u-correo" placeholder="Correo Electrónico">
+            <select id="u-dpto" class="select-dptos"><option value="">Departamento...</option></select>
+            <input type="text" id="u-nombre" placeholder="Nombre de Usuario (Username)">
+            <input type="password" id="u-pass" placeholder="Contraseña de Acceso">
+            <select id="u-rol" style="grid-column: span 2;">
+                <option value="viewer">Analista / Consulta (Viewer)</option>
+                <option value="almacenista">Operador de Almacén e Inventario</option>
+                <option value="contador">Analista Financiero / Contable</option>
+                <option value="auditor">Auditor Institucional</option>
+                <option value="editor">Supervisor / Operativo (Editor)</option>
+                <option value="admin">Administrador General (Admin)</option>
+            </select>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Permisos Específicos por Módulo (Checklist):</label>
+            <div class="permisos-container">
+                <label class="permiso-item"><input type="checkbox" id="perm_inventario" class="perm-checkbox" value="inventario"> Gestión de Inventario Físico y Traspasos</label>
+                <label class="permiso-item"><input type="checkbox" id="perm_compras" class="perm-checkbox" value="compras"> Módulo de Compras y Requisiciones</label>
+                <label class="permiso-item"><input type="checkbox" id="perm_licencias" class="perm-checkbox" value="licencias"> Control y Vencimiento de Licencias Software</label>
+                <label class="permiso-item"><input type="checkbox" id="perm_contabilidad" class="perm-checkbox" value="contabilidad"> Registro Contable y Reportes en Divisas</label>
+                <label class="permiso-item"><input type="checkbox" id="perm_enajenacion" class="perm-checkbox" value="enajenacion"> Procesamiento de Enajenaciones y Bajas</label>
+                <label class="permiso-item"><input type="checkbox" id="perm_auditoria" class="perm-checkbox" value="auditoria"> Monitoreo de Auditoría Institucional</label>
+                <label class="permiso-item"><input type="checkbox" id="perm_sistema" class="perm-checkbox" value="sistema"> Herramientas de Sistema (Excel, Respaldos SQL)</label>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button onclick="saveUser()" class="btn-primary">Guardar Cambios</button>
+            <button onclick="cerrarModalUsuario()" class="btn-danger">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/app.js"></script><script src="/js/users.js"></script>
+<script>document.addEventListener("DOMContentLoaded", () => { if(typeof loadUsuariosGrid === 'function'){ loadUsuariosGrid(); loadDptosSelects(); } });</script>
+</body>
+</html>

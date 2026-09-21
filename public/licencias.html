@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>SGBN - Licencias Software</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .modal-fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 3000; }
+        .modal-fullscreen-content { background: var(--bg-card); width: 90%; max-width: 800px; border-radius: 20px; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); border: 1px solid var(--border); animation: slideUp 0.3s ease; }
+    </style>
+</head>
+<body>
+<div id="toast-container" class="sgbn-toast-container"></div>
+<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar Tema"><span class="material-icons">dark_mode</span></button>
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header"><div style="display:flex; align-items:center; gap:10px;"><span class="material-icons">inventory_2</span><h2 style="margin:0; font-size:20px;">SGBN</h2></div></div>
+        <div class="sidebar-content">
+            <div class="user-profile"><span class="material-icons" style="font-size:36px;">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
+            <nav class="sidebar-nav">
+                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel Gerencial</button>
+                <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
+                <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
+                <button onclick="navegarA('licencias.html')" class="active"><span class="material-icons">vpn_key</span> Licencias</button>
+                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
+                <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
+                <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
+                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
+                <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
+                <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
+            </nav>
+            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%;"><span class="material-icons">logout</span> Salir</button></div>
+        </div>
+    </aside>
+    <main class="main-content">
+        <h1>Control de Licencias Software</h1>
+        <div class="card-form mt-3">
+            <h3 style="margin-bottom:15px; color:var(--primary);">Registrar Licencia</h3>
+            <div class="grid-form">
+                <input type="text" id="l-software" placeholder="Software">
+                <input type="text" id="l-clave" placeholder="Clave/Serial">
+                <input type="date" id="l-vence">
+                <!-- SE CAMBIÓ A SELECT PARA DESPLEGAR LA LISTA DE USUARIOS -->
+                <select id="l-responsable">
+                    <option value="">Seleccione Responsable...</option>
+                </select>
+            </div>
+            <button onclick="registrarLicencia()" class="btn-primary mt-3">Guardar</button>
+        </div>
+        <div class="table-responsive mt-3">
+            <table><thead><tr><th>Software / Clave</th><th>Vencimiento</th><th>Responsable</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="tabla-licencias-activas"></tbody></table>
+        </div>
+        <h3 style="margin-top: 30px; margin-bottom: 15px;">Historial Retiradas</h3>
+        <div class="table-responsive">
+            <table><thead><tr><th>Software</th><th>Fecha Base</th><th>Detalle</th><th>Estatus</th><th>Acción</th></tr></thead><tbody id="tabla-licencias-historial"></tbody></table>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL EXPEDIENTE PANTALLA COMPLETA -->
+<div id="modal-detalle-licencia" class="modal-fullscreen hidden">
+    <div class="modal-fullscreen-content">
+        <div class="flex-between" style="border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:20px;">
+            <h2 style="color:var(--primary); margin:0; display:flex; align-items:center; gap:10px;"><span class="material-icons">verified</span> Expediente Completo de Licencia Software</h2>
+            <span class="material-icons" style="cursor:pointer; font-size:28px;" onclick="document.getElementById('modal-detalle-licencia').classList.add('hidden')">close</span>
+        </div>
+        <div id="detalle-licencia-body" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; font-size:15px; margin-bottom:30px;"></div>
+        <div style="display:flex; justify-content:flex-end;"><button onclick="document.getElementById('modal-detalle-licencia').classList.add('hidden')" class="btn-primary">Cerrar Expediente</button></div>
+    </div>
+</div>
+
+<div id="modal-retirar" class="modal hidden">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 15px; color:var(--danger);">Retirar Licencia</h3>
+        <input type="hidden" id="retirar-id">
+        <textarea id="retirar-motivo" rows="3" placeholder="Motivo del retiro..." style="margin-bottom: 20px; width:100%; padding:10px;"></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:10px;"><button onclick="confirmarRetiro()" class="btn-danger">Confirmar Retiro</button><button onclick="document.getElementById('modal-retirar').classList.add('hidden')" class="btn-primary">Cancelar</button></div>
+    </div>
+</div>
+
+<div id="modal-renovar" class="modal hidden">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 15px; color:var(--primary);">Extender Tiempo</h3>
+        <input type="hidden" id="renovar-id">
+        <input type="date" id="renovar-fecha" style="margin-bottom: 20px;">
+        <div style="display:flex; justify-content:flex-end; gap:10px;"><button onclick="confirmarRenovacion()" class="btn-primary" style="background:var(--success);">Reanudar</button><button onclick="document.getElementById('modal-renovar').classList.add('hidden')" class="btn-danger">Cancelar</button></div>
+    </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script src="/js/licencias.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => { 
+        if(typeof loadLicenciasGrid === 'function') loadLicenciasGrid(); 
+        cargarUsuariosResponsables();
+    });
+
+    // Función para obtener los usuarios del backend y cargarlos en el select de responsable
+    async function cargarUsuariosResponsables() {
+        try {
+            const res = await fetch('/api/usuarios', { headers: authHeaders() });
+            const usuarios = await res.json();
+            const select = document.getElementById('l-responsable');
+            if(select) {
+                select.innerHTML = '<option value="">Seleccione Responsable...</option>' + 
+                    usuarios.map(u => `<option value="${u.nombre}">${u.nombre} (${u.departamento || 'General'})</option>`).join('');
+            }
+        } catch(e) {
+            console.error("Error al cargar la lista de usuarios:", e);
+        }
+    }
+
+    const originalLoadLicenciasGrid = window.loadLicenciasGrid;
+    window.loadLicenciasGrid = async function() {
+        await originalLoadLicenciasGrid();
+        
+        const tbodyHistorial = document.getElementById('tabla-licencias-historial');
+        if(tbodyHistorial && cacheLicencias) {
+            const historial = cacheLicencias.filter(l => l.estatus === 'Retirada' || l.estatus === 'Vencida/Retirada');
+            tbodyHistorial.innerHTML = historial.map(l => `
+                <tr onclick="verDetalleLicencia(${l.id})" style="cursor:pointer;" title="Haz clic para ver el expediente">
+                    <td><strong>${l.software}</strong><br><small style="color:var(--text-muted);">${l.serial || l.clave || 'Sin Clave'}</small></td>
+                    <td>${l.fecha_vencimiento ? l.fecha_vencimiento.split('T')[0] : '-'}</td>
+                    <td>Retirada del sistema</td>
+                    <td><span class="badge badge-danger">${l.estatus}</span></td>
+                    <td onclick="event.stopPropagation()">
+                        <button onclick="abrirModalRenovar(${l.id})" class="btn-primary" style="padding:4px 8px; font-size:11px; background:var(--success);">Reanudar</button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">El historial está vacío.</td></tr>`;
+        }
+    };
+
+    window.verDetalleLicencia = function(id) {
+        const l = cacheLicencias.find(item => item.id == id);
+        if(!l) return;
+        const bodyModal = document.getElementById('detalle-licencia-body');
+        if(bodyModal) {
+            bodyModal.innerHTML = `
+                <div><strong>Nombre del Software:</strong><br><span style="color:var(--primary); font-weight:600;">${l.software}</span></div>
+                <div><strong>Clave / Serial:</strong><br><code>${l.serial || l.clave || 'N/A'}</code></div>
+                <div><strong>Tipo / Categoría:</strong><br>${l.tipo || 'General'}</div>
+                <div><strong>Responsable / Departamento:</strong><br>${l.departamento || l.responsable || 'N/A'}</div>
+                <div><strong>Equipo Asignado:</strong><br>${l.equipo || 'No especificado'}</div>
+                <div><strong>Fecha de Vencimiento:</strong><br>${l.fecha_vencimiento ? l.fecha_vencimiento.split('T')[0] : 'Indefinida'}</div>
+                <div><strong>Estatus Actual:</strong><br><span class="badge badge-${l.estatus === 'Retirada' ? 'danger' : 'success'}">${l.estatus || 'Activa'}</span></div>
+                <div><strong>ID de Registro:</strong><br>#${l.id}</div>
+            `;
+            document.getElementById('modal-detalle-licencia').classList.remove('hidden');
+        }
+    };
+</script>
+</body>
+</html>
