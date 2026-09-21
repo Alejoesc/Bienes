@@ -42,41 +42,42 @@
     <main class="main-content">
         <h1>Mantenimiento y Respaldos del Sistema</h1>
         <div class="stats-grid mt-3">
+            <!-- Tarjeta 1: Importar Excel -->
             <div class="card-form" style="margin:0;">
                 <h3 style="margin-bottom:15px; color:var(--primary);">Importar Inventario Excel</h3>
-                
                 <div class="file-upload-wrapper" onclick="document.getElementById('file-import').click()">
                     <span class="material-icons" style="font-size:36px; color:var(--primary);">cloud_upload</span>
                     <p id="file-name-display" style="font-size:13px; font-weight:600; margin-top:8px;">Haga clic para seleccionar archivo Excel (.xlsx)</p>
                 </div>
                 <input type="file" id="file-import" accept=".xlsx, .xls" style="display:none;" onchange="actualizarNombreArchivo(this)">
-
                 <div class="format-box">
                     <b>Formato compatible (1ra Fila):</b><br>
                     <code>codigo</code> | <code>descripcion</code> | <code>serial</code> | <code>departamento</code> | <code>valor</code>
                 </div>
-
                 <button onclick="importarExcel()" class="btn-warning mt-3" style="width:100%; justify-content:center;">Procesar e Importar Datos</button>
             </div>
             
+            <!-- Tarjeta 2: Exportaciones y Respaldos SQL/Excel -->
             <div class="card-form" style="margin:0;">
                 <h3 style="margin-bottom:15px; color:var(--primary);">Exportaciones y Respaldos</h3>
-                <button onclick="exportarExcel()" class="btn-primary mt-3" style="width:100%; justify-content:center;"><span class="material-icons">table_chart</span> Descargar Inventario (Excel)</button>
+                <button onclick="descargarExportExcel()" class="btn-primary mt-3" style="width:100%; justify-content:center;"><span class="material-icons">table_chart</span> Descargar Inventario (Excel)</button>
                 <button onclick="descargarBackupSQL()" class="btn-primary mt-3" style="background:var(--success); width:100%; justify-content:center;"><span class="material-icons">storage</span> Respaldo Completo Base de Datos (SQL)</button>
+                
+                <!-- NUEVO APARTADO: Cargar / Restaurar Base de Datos SQL -->
+                <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
+                    <h4 style="margin-bottom: 10px; color: var(--danger); font-size: 14px;">Restaurar Base de Datos</h4>
+                    <div class="file-upload-wrapper" onclick="document.getElementById('file-restore-sql').click()" style="padding: 15px; margin-bottom: 10px;">
+                        <span class="material-icons" style="font-size: 28px; color: var(--danger);">settings_backup_restore</span>
+                        <p id="sql-name-display" style="font-size: 12px; font-weight: 600; margin-top: 5px;">Seleccionar archivo de respaldo (.sql)</p>
+                    </div>
+                    <input type="file" id="file-restore-sql" accept=".sql" style="display:none;" onchange="actualizarNombreSQL(this)">
+                    <button onclick="restarurarBackupSQL()" class="btn-danger" style="width:100%; justify-content:center; padding: 10px;"><span class="material-icons">upload</span> Cargar y Restaurar BD</button>
+                </div>
             </div>
         </div>
     </main>
 </div>
 <script src="/js/app.js"></script>
 <script src="/js/system.js"></script>
-<script>
-    function actualizarNombreArchivo(input) {
-        const display = document.getElementById('file-name-display');
-        if (input.files && input.files[0]) {
-            display.innerText = "Archivo seleccionado: " + input.files[0].name;
-            display.style.color = "var(--success)";
-        }
-    }
-</script>
 </body>
 </html>

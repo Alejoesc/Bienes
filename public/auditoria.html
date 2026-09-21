@@ -126,14 +126,49 @@
         const datos = obtenerDatosFiltradosRango();
         if(datos.length === 0) return mostrarNotificacion("No hay registros en el rango.", "warning");
 
-        await fetch('/api/auditoria/log', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ accion: 'REPORTE_EXCEL', detalle: 'Exportación CSV de auditoría por rango' }) });
+        await fetch('/api/auditoria/log', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ accion: 'REPORTE_EXCEL', detalle: 'Exportación Excel de auditoría por rango' }) });
 
-        let csv = "Fecha;Usuario;IP;Accion;Detalle\n";
-        datos.forEach(i => csv += `${i.created_at || i.fecha};${i.usuario};${i.ip};${i.accion};${i.detalle}\n`);
+        const filas = datos.map(i => `
+            <tr>
+                <td>${i.created_at || i.fecha || ''}</td>
+                <td>${i.usuario || ''}</td>
+                <td>${i.ip || ''}</td>
+                <td>${i.accion || ''}</td>
+                <td>${i.detalle || ''}</td>
+            </tr>
+        `).join('');
+
+        const tablaExcel = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <table border="1">
+                    <thead>
+                        <tr style="background-color: #f1f5f9; font-weight: bold;">
+                            <th>Fecha / Hora</th>
+                            <th>Usuario</th>
+                            <th>IP / Disp.</th>
+                            <th>Acción</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([tablaExcel], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        a.download = `auditoria_${new Date().toISOString().split('T')[0]}.csv`;
+        a.href = url;
+        a.download = `auditoria_${new Date().toISOString().split('T')[0]}.xls`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        mostrarNotificacion("Reporte Excel exportado exitosamente.", "success");
     }
 </script>
 </body>
