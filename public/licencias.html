@@ -17,20 +17,22 @@
     <aside class="sidebar">
         <div class="sidebar-header"><div style="display:flex; align-items:center; gap:10px;"><span class="material-icons">inventory_2</span><h2 style="margin:0; font-size:20px;">SGBN</h2></div></div>
         <div class="sidebar-content">
-            <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
-            <nav class="sidebar-nav">
-                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel</button>
-                <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
-                <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
-                <button onclick="navegarA('licencias.html')" class="active"><span class="material-icons">vpn_key</span> Licencias</button>
-                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
-                <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
-                <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
-                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Deptos</button>
-                <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
-                <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
-            </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%;"><span class="material-icons">logout</span> Salir</button></div>
+            <div>
+                <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
+                <nav class="sidebar-nav">
+                    <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel</button>
+                    <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
+                    <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
+                    <button onclick="navegarA('licencias.html')" class="active"><span class="material-icons">vpn_key</span> Licencias</button>
+                    <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
+                    <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
+                    <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
+                    <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Deptos</button>
+                    <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
+                    <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
+                </nav>
+            </div>
+            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir del Sistema</button></div>
         </div>
     </aside>
     <main class="main-content">
@@ -43,7 +45,7 @@
                 <input type="date" id="l-vence">
                 <select id="l-responsable"><option value="">Seleccione Responsable...</option></select>
             </div>
-            <button onclick="window.registrarLicencia()" class="btn-primary mt-3">Guardar</button>
+            <button onclick="window.registrarLicencia()" class="btn-primary mt-3">Guardar Licencia</button>
         </div>
         <div class="table-responsive mt-3">
             <table><thead><tr><th>Software / Clave</th><th>Vencimiento</th><th>Responsable</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="tabla-licencias-activas"></tbody></table>
@@ -106,13 +108,38 @@
             const hoy = new Date();
             const activas = []; const historial = [];
 
-            data.forEach(l => { (l.estatus === 'Retirada' || l.estatus === 'Vencida/Retirada') ? historial.push(l) : activas.push(l); });
+            data.forEach(l => { 
+                if (l.estatus === 'Retirada' || l.estatus === 'Vencida/Retirada') {
+                    historial.push(l); 
+                } else {
+                    if (l.fecha_vencimiento) {
+                        const fechaVenc = new Date(l.fecha_vencimiento);
+                        const diferenciaDias = Math.ceil((fechaVenc - hoy) / (1000 * 60 * 60 * 24));
+                        l.diasRestantes = diferenciaDias;
+                    }
+                    activas.push(l);
+                }
+            });
 
             tbodyActivas.innerHTML = activas.map(l => {
                 let badgeColor = 'var(--success)';
+                let colorFila = 'transparent';
                 let textoVenc = l.fecha_vencimiento ? l.fecha_vencimiento.split('T')[0] : 'Indefinida';
+                
+                if (l.diasRestantes !== undefined) {
+                    if (l.diasRestantes < 0) {
+                        badgeColor = 'var(--danger)';
+                        colorFila = 'rgba(244, 63, 94, 0.08)'; // Rojo sutil no escandaloso
+                        textoVenc += ` <br><b style="color:var(--danger);">Vencida</b>`;
+                    } else if (l.diasRestantes <= 30) {
+                        badgeColor = 'var(--warning)';
+                        colorFila = 'rgba(245, 158, 11, 0.1)'; // Amarillo sutil no escandaloso
+                        textoVenc += ` <br><b style="color:var(--warning);">Vence en ${l.diasRestantes} días</b>`;
+                    }
+                }
+
                 return `
-                    <tr onclick="window.verDetalleLicencia(${l.id})" style="cursor:pointer;">
+                    <tr onclick="window.verDetalleLicencia(${l.id})" style="cursor:pointer; background-color: ${colorFila};">
                         <td><strong>${l.software}</strong><br><small style="color:var(--text-muted);">${l.serial || l.clave || 'Sin Clave'}</small></td>
                         <td>${textoVenc}</td>
                         <td>${l.departamento || l.responsable || '-'}</td>
@@ -152,7 +179,6 @@
 
     window.marcarRetirada = function(id) { document.getElementById('retirar-id').value = id; document.getElementById('retirar-motivo').value = ''; document.getElementById('modal-retirar').classList.remove('hidden'); };
     
-    // ENVIANDO EL MOTIVO AL BACKEND
     window.confirmarRetiro = async function() {
         const id = document.getElementById('retirar-id').value;
         const motivo = document.getElementById('retirar-motivo').value.trim() || 'Retirada por administrador';

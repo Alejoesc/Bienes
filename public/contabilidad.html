@@ -8,7 +8,11 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .card-filters { background: var(--bg-card); padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .card-filters input, .card-filters select { padding: 8px 12px; font-size: 13px; border-radius: 8px; height: 38px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); }
+        .card-filters input { height: 42px; }
+        .modal-fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 3000; animation: fadeIn 0.2s ease;}
+        .modal-fullscreen-content { background: var(--bg-card); width: 90%; max-width: 850px; border-radius: 20px; padding: 35px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); border: 1px solid var(--border); animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto;}
+        .adjunto-box { border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: var(--table-header); text-align: center; margin-top: 10px; }
+        .adjunto-box img { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -17,27 +21,29 @@
     <aside class="sidebar">
         <div class="sidebar-header"><div style="display:flex; align-items:center; gap:10px;"><span class="material-icons">inventory_2</span><h2 style="margin:0; font-size:20px;">SGBN</h2></div></div>
         <div class="sidebar-content">
-            <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
-            <nav class="sidebar-nav">
-                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel Gerencial</button>
-                <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
-                <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
-                <button onclick="navegarA('licencias.html')"><span class="material-icons">vpn_key</span> Licencias</button>
-                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="active"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
-                <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
-                <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
-                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
-                <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
-                <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
-            </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir</button></div>
+            <div>
+                <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
+                <nav class="sidebar-nav">
+                    <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel Gerencial</button>
+                    <button onclick="navegarA('inventario.html')"><span class="material-icons">devices</span> Inventario</button>
+                    <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
+                    <button onclick="navegarA('licencias.html')"><span class="material-icons">vpn_key</span> Licencias</button>
+                    <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="active"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
+                    <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
+                    <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
+                    <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
+                    <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
+                    <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
+                </nav>
+            </div>
+            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir del Sistema</button></div>
         </div>
     </aside>
     <main class="main-content">
         <h1>Registro Contable Oficial</h1>
         <div class="card-filters mt-3">
             <div style="flex: 1; min-width: 200px;">
-                <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 3px;">Buscador:</label>
+                <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 3px;">Buscador General:</label>
                 <input type="text" id="filtro-texto" onkeyup="window.filtrarContabilidad()" placeholder="Buscar descripción, ID..." style="width: 100%;">
             </div>
             <div>
@@ -49,14 +55,30 @@
                 <input type="date" id="filtro-hasta" onchange="window.filtrarContabilidad()">
             </div>
             <div style="display: flex; gap: 8px; align-items: flex-end; margin-top: auto;">
-                <button onclick="window.exportarExcelContabilidad()" class="btn-primary" style="background:var(--success); padding: 8px 14px; font-size: 12.5px;"><span class="material-icons">table_chart</span> Excel (.xls)</button>
-                <button onclick="window.exportarPDFContabilidad()" class="btn-danger" style="padding: 8px 14px; font-size: 12.5px;"><span class="material-icons">picture_as_pdf</span> PDF Oficial</button>
+                <button onclick="window.exportarExcelContabilidad()" class="btn-primary" style="background:var(--success); height:42px;"><span class="material-icons">table_chart</span> Excel (.xls)</button>
+                <button onclick="window.exportarPDFContabilidad()" class="btn-danger" style="height:42px; background:#e11d48;"><span class="material-icons">picture_as_pdf</span> PDF Oficial</button>
             </div>
         </div>
         <div class="table-responsive mt-3">
-            <table><thead><tr><th>ID Compra</th><th>Descripción</th><th>Monto Ejecutado ($)</th><th>Estatus</th></tr></thead><tbody id="tabla-contabilidad"></tbody></table>
+            <table><thead><tr><th>ID Compra</th><th>Descripción</th><th>Monto Ejecutado ($)</th><th>Estatus Contable</th></tr></thead><tbody id="tabla-contabilidad"></tbody></table>
         </div>
     </main>
+</div>
+
+<!-- MODAL: EXPEDIENTE CONTABLE -->
+<div id="modal-detalle-contable" class="modal-fullscreen hidden">
+    <div class="modal-fullscreen-content">
+        <div class="flex-between" style="border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:20px;">
+            <h2 style="color:var(--primary); margin:0; display:flex; align-items:center; gap:10px;"><span class="material-icons">account_balance</span> Revisión de Ejecución Contable #<span id="exp-id"></span></h2>
+            <span class="material-icons" style="cursor:pointer; font-size:28px;" onclick="document.getElementById('modal-detalle-contable').classList.add('hidden')">close</span>
+        </div>
+        
+        <div id="detalle-contable-body" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; font-size:14px; margin-bottom:25px;"></div>
+
+        <div style="display:flex; justify-content:flex-end; border-top: 1px solid var(--border); padding-top: 20px;">
+            <button onclick="document.getElementById('modal-detalle-contable').classList.add('hidden')" class="btn-primary">Cerrar Expediente</button>
+        </div>
+    </div>
 </div>
 
 <script src="/js/app.js"></script>
@@ -90,13 +112,52 @@
 
         const tbody = document.getElementById('tabla-contabilidad');
         tbody.innerHTML = datosContabilidadFiltradosActuales.map(c => `
-            <tr style="cursor: default;">
-                <td><strong>#${c.id}</strong></td>
-                <td>${c.descripcion || '-'}</td>
-                <td><strong>$ ${parseFloat(c.presupuesto || c.monto || 0).toFixed(2)}</strong></td>
+            <tr style="cursor: pointer;" onclick="window.abrirDetalleContable(${c.id})">
+                <td><strong>#${c.id}</strong><br><small style="color:var(--text-muted);">${c.created_at ? c.created_at.split('T')[0] : ''}</small></td>
+                <td>${c.descripcion || '-'}<br><small>${c.departamento}</small></td>                 <td><strong style="color:var(--success); font-size:16px;">$ ${parseFloat(c.presupuesto || c.monto || 0).toFixed(2)}</strong></td>
                 <td><span class="badge" style="background:var(--success); color:#fff;">${c.estado || c.estatus || 'Completado'}</span></td>
             </tr>
-        `).join('') || `<tr><td colspan="4" style="text-align:center;">No hay registros disponibles.</td></tr>`;
+        `).join('') || `<tr><td colspan="4" style="text-align:center;">No hay registros contables disponibles en este rango.</td></tr>`;
+    };
+
+    window.abrirDetalleContable = function(id) {
+        const c = cacheContabilidadGlobal.find(item => item.id === id);
+        if(!c) return;
+
+        document.getElementById('exp-id').innerText = c.id;
+
+        let htmlFactura = `<div class="adjunto-box"><span class="material-icons" style="font-size:32px; color:var(--text-muted);">warning</span><br>Factura no encontrada</div>`;
+        if(c.factura_adjunta) {
+            const extF = c.factura_adjunta.split('.').pop().toLowerCase();
+            if(extF === 'pdf') {
+                htmlFactura = `<div class="adjunto-box" style="border-color:var(--success);"><a href="/uploads/${c.factura_adjunta}" target="_blank" class="btn-primary" style="background:var(--success);"><span class="material-icons">receipt</span> Ver Factura PDF</a></div>`;
+            } else {
+                htmlFactura = `<div class="adjunto-box" style="border-color:var(--success);"><img src="/uploads/${c.factura_adjunta}" onclick="window.open(this.src)" title="Ampliar Factura"></div>`;
+            }
+        }
+
+        let htmlEvidencia = ``;
+        if(c.foto_adjunta) {
+            const extE = c.foto_adjunta.split('.').pop().toLowerCase();
+            if(extE === 'pdf') {
+                htmlEvidencia = `<div class="adjunto-box" style="border-color:var(--primary);"><a href="/uploads/${c.foto_adjunta}" target="_blank" class="btn-primary"><span class="material-icons">description</span> Ver Cotización Previa</a></div>`;
+            } else {
+                htmlEvidencia = `<div class="adjunto-box" style="border-color:var(--primary);"><img src="/uploads/${c.foto_adjunta}" onclick="window.open(this.src)" title="Ampliar Cotización"></div>`;
+            }
+        }
+
+        document.getElementById('detalle-contable-body').innerHTML = `
+            <div><span style="font-size:12px; color:var(--text-muted); display:block;">Solicitante / Aprobador:</span><strong>${c.solicitante}</strong></div>
+            <div><span style="font-size:12px; color:var(--text-muted); display:block;">Departamento Imputado:</span><strong>${c.departamento}</strong></div>
+            <div style="grid-column: span 2;"><span style="font-size:12px; color:var(--text-muted); display:block;">Concepto del Gasto:</span><p style="margin:2px 0 0 0; font-size:16px; font-weight:bold;">${c.descripcion}</p></div>
+            <div style="grid-column: span 2;"><span style="font-size:12px; color:var(--text-muted); display:block;">Justificación de Ejecución:</span><p style="margin:2px 0 0 0; background:var(--table-header); padding:10px; border-radius:8px;">${c.justificacion || 'N/D'}</p></div>
+            <div><span style="font-size:12px; color:var(--text-muted); display:block;">Monto Total Ejecutado:</span><strong style="color:var(--success); font-size:20px;">$${parseFloat(c.presupuesto).toFixed(2)}</strong></div>
+            <div><span style="font-size:12px; color:var(--text-muted); display:block;">Fecha Contable:</span><strong>${c.created_at ? c.created_at.split('T')[0] : 'N/D'}</strong></div>
+            <div><span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:5px;">Soporte de Cotización (Original):</span>${htmlEvidencia}</div>
+            <div><span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:5px; color:var(--success); font-weight:bold;">Factura Fiscal Definitiva:</span>${htmlFactura}</div>
+        `;
+
+        document.getElementById('modal-detalle-contable').classList.remove('hidden');
     };
 
     window.exportarExcelContabilidad = function() {
@@ -104,7 +165,6 @@
         if(datos.length === 0) return mostrarNotificacion("No hay datos para exportar.", "warning");
         
         const filas = datos.map(c => `<tr><td align="center">#${c.id}</td><td>${c.descripcion || ''}</td><td align="right">${parseFloat(c.presupuesto||c.monto||0).toFixed(2)}</td><td align="center">${c.estado||'Completado'}</td></tr>`).join('');
-        
         const tablaExcel = `
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head><meta charset="UTF-8"></head><body>
@@ -122,19 +182,18 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `Reporte_Contable_${new Date().toISOString().split('T')[0]}.xls`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-        mostrarNotificacion("Reporte XLS generado exitosamente.", "success");
     };
 
     window.exportarPDFContabilidad = function() {
         const datos = datosContabilidadFiltradosActuales.length > 0 ? datosContabilidadFiltradosActuales : cacheContabilidadGlobal;
         if(datos.length === 0) return mostrarNotificacion("No hay datos en PDF.", "warning");
         const win = window.open('', '_blank');
-        const filas = datos.map(c => `<tr><td>#${c.id}</td><td>${c.descripcion}</td><td>$ ${parseFloat(c.presupuesto||0).toFixed(2)}</td><td>${c.estado||'Completado'}</td></tr>`).join('');
+        const filas = datos.map(c => `<tr><td>#${c.id}</td><td>${c.descripcion}</td><td>$ ${parseFloat(c.presupuesto||0).toFixed(2)}</td><td style="color:#10b981; font-weight:bold;">${c.estado||'Completado'}</td></tr>`).join('');
         win.document.write(`
             <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Contable</title>
-            <style>body{font-family:sans-serif;margin:30px;color:#111;font-size:12px;} .header{text-align:center;margin-bottom:25px;border-bottom:2px solid #333;padding-bottom:15px;} table{width:100%;border-collapse:collapse;margin-top:15px;} th,td{border:1px solid #ccc;padding:8px;text-align:left;} th{background-color:#f1f5f9;text-transform:uppercase;font-size:11px;}</style>
-            </head><body><div class="header"><h2>REPÚBLICA BOLIVARIANA DE VENEZUELA</h2><h4>SISTEMA DE GESTIÓN DE BIENES NACIONALES</h4></div>
-            <table><thead><tr><th>ID</th><th>Descripción</th><th>Monto ($)</th><th>Estatus</th></tr></thead><tbody>${filas}</tbody></table>
+            <style>body{font-family:sans-serif;margin:30px;color:#111;font-size:12px;} .header{text-align:center;margin-bottom:25px;border-bottom:2px solid #333;padding-bottom:15px;} table{width:100%;border-collapse:collapse;margin-top:15px;} th,td{border:1px solid #ccc;padding:8px;text-align:left;} th{background-color:#1e3a8a; color:#fff;text-transform:uppercase;font-size:11px;} tr:nth-child(even) td { background-color: #f8fafc; }</style>
+            </head><body><div class="header"><h2>BCV - REPÚBLICA BOLIVARIANA DE VENEZUELA</h2><h4>SISTEMA DE GESTIÓN DE BIENES NACIONALES - REGISTRO CONTABLE</h4></div>
+            <table><thead><tr><th>ID</th><th>Descripción</th><th>Monto Ejecutado ($)</th><th>Estatus</th></tr></thead><tbody>${filas}</tbody></table>
             <script>window.onload = function(){ window.print(); };<\/script></body></html>
         `);
         win.document.close();

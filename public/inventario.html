@@ -2,42 +2,22 @@
 <html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>SGBN - Inventario Físico</title>
+    <title>SGBN - Inventario Físico SUDEBIP</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px);
-            display: flex; align-items: center; justify-content: center; z-index: 9999;
-            padding: 20px; box-sizing: border-box;
-        }
-        .modal-card {
-            background: var(--bg-card, #ffffff); border: 1px solid var(--border);
-            border-top: 5px solid var(--primary); border-radius: 16px;
-            width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto;
-            padding: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); color: var(--text-main);
-        }
-        .image-preview-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px; margin-top: 15px;
-        }
-        .image-preview-item {
-            position: relative; border-radius: 8px; overflow: hidden;
-            border: 1px solid var(--border); height: 110px; background: #000;
-        }
-        .image-preview-item img {
-            width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s;
-        }
-        .image-preview-item img:hover { transform: scale(1.05); cursor: pointer; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; box-sizing: border-box; }
+        .modal-card { background: var(--bg-card, #ffffff); border: 1px solid var(--border); border-top: 5px solid var(--primary); border-radius: 16px; width: 100%; max-width: 850px; max-height: 90vh; overflow-y: auto; padding: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); color: var(--text-main); }
+        .image-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 15px; }
+        .image-preview-item { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); height: 95px; background: #000; cursor: pointer; }
+        .image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
         .clickable-row { cursor: pointer; transition: background 0.15s ease; }
-        .clickable-row:hover { background: rgba(37, 99, 235, 0.06) !important; }
-        .custom-file-upload {
-            border: 2px dashed var(--border); padding: 18px; border-radius: 12px;
-            text-align: center; cursor: pointer; background: var(--bg-main); transition: all 0.2s;
-        }
+        .clickable-row:hover { background: rgba(37, 99, 235, 0.05) !important; }
+        .custom-file-upload { border: 2px dashed var(--border); padding: 18px; border-radius: 10px; text-align: center; cursor: pointer; background: var(--bg-main); transition: all 0.2s; }
         .custom-file-upload:hover { border-color: var(--primary); background: rgba(37,99,235,0.03); }
+        #modal-visor-imagen { z-index: 10000; background: rgba(15, 23, 42, 0.95); }
+        #visor-img-src { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -46,170 +26,458 @@
     <aside class="sidebar">
         <div class="sidebar-header"><div style="display: flex; align-items: center; gap: 10px;"><span class="material-icons">inventory_2</span><h2 style="margin:0;">SGBN</h2></div></div>
         <div class="sidebar-content">
-            <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
-            <nav class="sidebar-nav">
-                <button onclick="navegarA('index.html')"><span class="material-icons">dashboard</span> Panel Gerencial</button>
-                <button onclick="navegarA('inventario.html')" class="active"><span class="material-icons">devices</span> Inventario</button>
-                <button onclick="navegarA('compras.html')"><span class="material-icons">shopping_cart</span> Compras</button>
-                <button onclick="navegarA('licencias.html')"><span class="material-icons">vpn_key</span> Licencias</button>
-                <button onclick="navegarA('contabilidad.html')" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
-                <button onclick="navegarA('enajenacion.html')"><span class="material-icons">delete_sweep</span> Enajenación</button>
-                <button onclick="navegarA('usuarios.html')" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
-                <button onclick="navegarA('departamentos.html')" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Departamentos</button>
-                <button onclick="navegarA('auditoria.html')" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
-                <button onclick="navegarA('sistema.html')" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
-            </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir</button></div>
+            <div>
+                <div class="user-profile"><span class="material-icons">account_circle</span><div class="user-details"><span id="user-info" class="user-name"></span><span id="user-role" class="user-role-badge"></span></div></div>
+                <nav class="sidebar-nav">
+                    <button onclick="window.location.href='/index.html'"><span class="material-icons">dashboard</span> Panel</button>
+                    <button onclick="window.location.href='/inventario.html'" class="active"><span class="material-icons">devices</span> Inventario</button>
+                    <button onclick="window.location.href='/compras.html'"><span class="material-icons">shopping_cart</span> Compras</button>
+                    <button onclick="window.location.href='/licencias.html'"><span class="material-icons">vpn_key</span> Licencias</button>
+                    <button onclick="window.location.href='/contabilidad.html'" id="menu-contabilidad" class="hidden"><span class="material-icons">account_balance_wallet</span> Contabilidad</button>
+                    <button onclick="window.location.href='/enajenacion.html'"><span class="material-icons">delete_sweep</span> Enajenación</button>
+                    <button onclick="window.location.href='/usuarios.html'" id="menu-usuarios" class="hidden"><span class="material-icons">security</span> Usuarios</button>
+                    <button onclick="window.location.href='/departamentos.html'" id="menu-departamentos" class="hidden"><span class="material-icons">business</span> Deptos</button>
+                    <button onclick="window.location.href='/auditoria.html'" id="menu-auditoria" class="hidden"><span class="material-icons">policy</span> Auditoría</button>
+                    <button onclick="window.location.href='/sistema.html'" id="menu-sistema" class="hidden"><span class="material-icons">settings</span> Sistema</button>
+                </nav>
+            </div>
+            <div class="sidebar-footer"><button onclick="logout()" class="btn-danger" style="width:100%; justify-content:center;"><span class="material-icons">logout</span> Salir del Sistema</button></div>
         </div>
     </aside>
     <main class="main-content">
-        <div class="flex-between">
-            <h1>Inventario Físico</h1>
-            <input type="text" id="search-input" onkeyup="filterBienes()" placeholder="Buscar código, serial..." style="width:250px; margin-bottom:0;">
-        </div>
-        <div id="form-bienes" class="card-form mt-3">
-            <h4 style="margin-top:0; color:var(--primary); margin-bottom: 15px;">Catálogo Oficial de Bienes Muebles (SUDEBIP)</h4>
-            <div class="grid-form" style="margin-bottom: 15px;">
-                <select id="b-sudebip" style="grid-column: span 3;">
-                    <option value="">Seleccione Subcategoría SUDEBIP...</option>
-                    <!-- 14000 -->
-                    <option value="14010-000 | Maquinaria y equipos de construcción y mantenimiento">14010-000 | Maquinaria y equipos de construcción y mantenimiento</option>
-                    <option value="14020-000 | Maquinarias y equipos para mantenimiento de automotores">14020-000 | Maquinarias y equipos para mantenimiento de automotores</option>
-                    <option value="14030-000 | Maquinarias y equipos agrícolas y pecuarios">14030-000 | Maquinarias y equipos agrícolas y pecuarios</option>
-                    <option value="14040-000 | Maquinarias y equipos de artes gráficas y reproducción">14040-000 | Maquinarias y equipos de artes gráficas y reproducción</option>
-                    <option value="14050-000 | Maquinarias y equipos industriales y de taller">14050-000 | Maquinarias y equipos industriales y de taller</option>
-                    <option value="14060-000 | Maquinarias y equipos de energía">14060-000 | Maquinarias y equipos de energía</option>
-                    <option value="14070-000 | Maquinarias y equipos de riego y acueductos">14070-000 | Maquinarias y equipos de riego y acueductos</option>
-                    <option value="14080-000 | Equipos de almacen">14080-000 | Equipos de almacen</option>
-                    <option value="14990-000 | Otras maquinarias y demás equipos de construcción, campo, industria y taller">14990-000 | Otras maquinarias y demás equipos de construcción, campo, industria y taller</option>
-                    <!-- 15000 -->
-                    <option value="15010-000 | Vehículos automotores terrestres">15010-000 | Vehículos automotores terrestres</option>
-                    <option value="15020-000 | Equipos ferroviarios y de cables aéreos">15020-000 | Equipos ferroviarios y de cables aéreos</option>
-                    <option value="15030-000 | Equipos marítimos de transporte">15030-000 | Equipos marítimos de transporte</option>
-                    <option value="15040-000 | Equipos aéreos de transporte">15040-000 | Equipos aéreos de transporte</option>
-                    <option value="15050-000 | Vehículos de tracción no motorizados">15050-000 | Vehículos de tracción no motorizados</option>
-                    <option value="15060-000 | Equipos auxiliares de transporte">15060-000 | Equipos auxiliares de transporte</option>
-                    <option value="15990-000 | Otros equipos de transporte, tracción y elevación">15990-000 | Otros equipos de transporte, tracción y elevación</option>
-                    <!-- 16000 -->
-                    <option value="16010-000 | Equipos de telecomunicaciones">16010-000 | Equipos de telecomunicaciones</option>
-                    <option value="16020-000 | Equipos de señalamiento">16020-000 | Equipos de señalamiento</option>
-                    <option value="16030-000 | Equipos de control de tráfico aéreo">16030-000 | Equipos de control de tráfico aéreo</option>
-                    <option value="16040-000 | Equipos de correo">16040-000 | Equipos de correo</option>
-                    <option value="16990-000 | Otros equipos de comunicaciones y de señalamiento">16990-000 | Otros equipos de comunicaciones y de señalamiento</option>
-                    <!-- 17000 -->
-                    <option value="17010-000 | Equipos médicos - quirúrgicos, dentales y veterinarios">17010-000 | Equipos médicos - quirúrgicos, dentales y veterinarios</option>
-                    <option value="17990-000 | Otros Equipos médicos - quirúrgicos, dentales y veterinarios">17990-000 | Otros Equipos médicos - quirúrgicos, dentales y veterinarios</option>
-                    <!-- 18000 -->
-                    <option value="18010-000 | Equipos científicos y de laboratorio">18010-000 | Equipos científicos y de laboratorio</option>
-                    <option value="18020-000 | Equipos de enseñanza, deporte y recreación">18020-000 | Equipos de enseñanza, deporte y recreación</option>
-                    <option value="18030-000 | Obras de arte">18030-000 | Obras de arte</option>
-                    <option value="18040-000 | Libros y revistas">18040-000 | Libros y revistas</option>
-                    <option value="18050-000 | Equipos religiosos">18050-000 | Equipos religiosos</option>
-                    <option value="18060-000 | Instrumentos musicales">18060-000 | Instrumentos musicales</option>
-                    <option value="18990-000 | Otros equipos científicos, religiosos, de enseñanza y recreación">18990-000 | Otros equipos científicos, religiosos, de enseñanza y recreación</option>
-                    <!-- 19000 -->
-                    <option value="19010-000 | Equipos y armamentos de defensa y seguridad pública">19010-000 | Equipos y armamentos de defensa y seguridad pública</option>
-                    <option value="19990-000 | Otros equipos para la defensa y seguridad pública">19990-000 | Otros equipos para la defensa y seguridad pública</option>
-                    <!-- 20000 -->
-                    <option value="20010-000 | Mobiliario y equipos de oficina">20010-000 | Mobiliario y equipos de oficina</option>
-                    <option value="20020-000 | Equipos de procesamiento de datos">20020-000 | Equipos de procesamiento de datos</option>
-                    <option value="20090-000 | Mobiliario y equipos de alojamiento">20090-000 | Mobiliario y equipos de alojamiento</option>
-                    <option value="20990-000 | Otras máquinas, muebles y demás equipos de oficina y de alojamiento">20990-000 | Otras máquinas, muebles y demás equipos de oficina y de alojamiento</option>
-                    <!-- 21000 -->
-                    <option value="21010-000 | Semovientes">21010-000 | Semovientes</option>
-                </select>
-                <input type="text" id="b-grupo" placeholder="Código SUDEBIP" readonly style="background:var(--table-header)">
-                <input type="text" id="b-subgrupo" placeholder="Subcategoría" readonly style="background:var(--table-header)">
+        
+        <div class="flex-between" style="flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+            <h1 style="margin:0;">Inventario Físico</h1>
+            <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                <button onclick="window.exportarPDFInventario()" class="btn-danger" style="padding: 8px 14px;"><span class="material-icons" style="font-size:18px;">picture_as_pdf</span> Reporte PDF</button>
+                <button onclick="window.exportarXLSInventario()" class="btn-primary" style="background:#10b981; padding: 8px 14px;"><span class="material-icons" style="font-size:18px;">table_chart</span> Reporte XLS</button>
+                <input type="text" id="search-input" onkeyup="window.filterBienes()" placeholder="Buscar código, serial..." style="width:220px; margin-bottom:0; padding:8px 12px;">
             </div>
-            <div class="grid-form" style="margin-bottom: 15px;">
-                <input type="text" id="b-codigo" placeholder="Código Patrimonial">
-                <input type="text" id="b-desc" placeholder="Descripción General">
-                <input type="text" id="b-serial" placeholder="Serial de Fábrica">
-                <select id="b-dpto" class="select-dptos"><option value="">Departamento...</option></select>
-                <input type="number" id="b-valor" placeholder="Valor ($)">
+        </div>
+
+        <div class="card-form mt-3">
+            <h4 style="margin-top:0; color:var(--primary); margin-bottom: 20px;">Registro de Bienes Nacionales (Catálogo Completo SUDEBIP)</h4>
+            
+            <div class="grid-form" style="margin-bottom: 16px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Código Institucional (BCV):</label>
+                    <input type="text" id="b-codigo-inst" placeholder="Generando..." readonly style="border: 2px solid var(--primary); background:var(--table-header); font-weight: bold; color:var(--primary);">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Subcategoría SUDEBIP (Catálogo Oficial):</label>
+                    <select id="b-sudebip">
+                        <option value="">Seleccione Subcategoría Oficial SUDEBIP...</option>
+                        <option value="14010-000 | Maquinaria y equipos de construcción y mantenimiento">14010-000 | Maquinaria y equipos de construcción y mantenimiento</option>
+                        <option value="14020-000 | Maquinarias y equipos para mantenimiento de automotores">14020-000 | Maquinarias y equipos para mantenimiento de automotores</option>
+                        <option value="14030-000 | Maquinarias y equipos agrícolas y pecuarios">14030-000 | Maquinarias y equipos agrícolas y pecuarios</option>
+                        <option value="14040-000 | Maquinarias y equipos de artes gráficas y reproducción">14040-000 | Maquinarias y equipos de artes gráficas y reproducción</option>
+                        <option value="14050-000 | Maquinarias y equipos industriales y de taller">14050-000 | Maquinarias y equipos industriales y de taller</option>
+                        <option value="14060-000 | Maquinarias y equipos de energía">14060-000 | Maquinarias y equipos de energía</option>
+                        <option value="14070-000 | Maquinarias y equipos de riego y acueductos">14070-000 | Maquinarias y equipos de riego y acueductos</option>
+                        <option value="14080-000 | Equipos de almacen">14080-000 | Equipos de almacen</option>
+                        <option value="14990-000 | Otras maquinarias y demás equipos de construcción, campo, industria y taller">14990-000 | Otras maquinarias y demás equipos de construcción, campo, industria y taller</option>
+                        <option value="15010-000 | Vehículos automotores terrestres">15010-000 | Vehículos automotores terrestres</option>
+                        <option value="15020-000 | Equipos ferroviarios y de cables aéreos">15020-000 | Equipos ferroviarios y de cables aéreos</option>
+                        <option value="15030-000 | Equipos marítimos de transporte">15030-000 | Equipos marítimos de transporte</option>
+                        <option value="15040-000 | Equipos aéreos de transporte">15040-000 | Equipos aéreos de transporte</option>
+                        <option value="15050-000 | Vehículos de tracción no motorizados">15050-000 | Vehículos de tracción no motorizados</option>
+                        <option value="15060-000 | Equipos auxiliares de transporte">15060-000 | Equipos auxiliares de transporte</option>
+                        <option value="15990-000 | Otros equipos de transporte, tracción y elevación">15990-000 | Otros equipos de transporte, tracción y elevación</option>
+                        <option value="16010-000 | Equipos de telecomunicaciones">16010-000 | Equipos de telecomunicaciones</option>
+                        <option value="16020-000 | Equipos de señalamiento">16020-000 | Equipos de señalamiento</option>
+                        <option value="16030-000 | Equipos de control de tráfico aéreo">16030-000 | Equipos de control de tráfico aéreo</option>
+                        <option value="16040-000 | Equipos de correo">16040-000 | Equipos de correo</option>
+                        <option value="16990-000 | Otros equipos de comunicaciones y de señalamiento">16990-000 | Otros equipos de comunicaciones y de señalamiento</option>
+                        <option value="17010-000 | Equipos médicos - quirúrgicos, dentales y veterinarios">17010-000 | Equipos médicos - quirúrgicos, dentales y veterinarios</option>
+                        <option value="17990-000 | Otros Equipos médicos - quirúrgicos, dentales y veterinarios">17990-000 | Otros Equipos médicos - quirúrgicos, dentales y veterinarios</option>
+                        <option value="18010-000 | Equipos científicos y de laboratorio">18010-000 | Equipos científicos y de laboratorio</option>
+                        <option value="18020-000 | Equipos de enseñanza, deporte y recreación">18020-000 | Equipos de enseñanza, deporte y recreación</option>
+                        <option value="18030-000 | Obras de arte">18030-000 | Obras de arte</option>
+                        <option value="18040-000 | Libros y revistas">18040-000 | Libros y revistas</option>
+                        <option value="18050-000 | Equipos religiosos">18050-000 | Equipos religiosos</option>
+                        <option value="18060-000 | Instrumentos musicales">18060-000 | Instrumentos musicales</option>
+                        <option value="18990-000 | Otros equipos científicos, religiosos, de enseñanza y recreación">18990-000 | Otros equipos científicos, religiosos, de enseñanza y recreación</option>
+                        <option value="19010-000 | Equipos y armamentos de defensa y seguridad pública">19010-000 | Equipos y armamentos de defensa y seguridad pública</option>
+                        <option value="19990-000 | Otros equipos para la defensa y seguridad pública">19990-000 | Otros equipos para la defensa y seguridad pública</option>
+                        <option value="20010-000 | Mobiliario y equipos de oficina">20010-000 | Mobiliario y equipos de oficina</option>
+                        <option value="20020-000 | Equipos de procesamiento de datos">20020-000 | Equipos de procesamiento de datos</option>
+                        <option value="20090-000 | Mobiliario y equipos de alojamiento">20090-000 | Mobiliario y equipos de alojamiento</option>
+                        <option value="20990-000 | Otras máquinas, muebles y demás equipos de oficina y de alojamiento">20990-000 | Otras máquinas, muebles y demás equipos de oficina y de alojamiento</option>
+                        <option value="21010-000 | Semovientes">21010-000 | Semovientes</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Módulo de carga y compresión automática de imágenes -->
-            <div style="margin-bottom: 15px;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Fotografías / Evidencias (Compresión Automática):</label>
-                <div class="custom-file-upload" onclick="document.getElementById('b-fotos').click()">
-                    <span class="material-icons" style="font-size: 28px; color: var(--primary);">cloud_upload</span>
-                    <p id="file-label-text" style="font-size: 13px; margin: 5px 0 0 0; font-weight: 500;">Haga clic para seleccionar fotografías (Se comprimirán automáticamente)</p>
+            <div class="grid-form" style="margin-bottom: 16px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Código Sub-categoría SUDEBIP:</label>
+                    <input type="text" id="b-grupo" placeholder="Código" readonly style="background:var(--table-header)">
                 </div>
-                <input type="file" id="b-fotos" accept="image/*" multiple style="display:none;" onchange="procesarImagenesComprimidas(this)">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Descripción de Sub-categoría:</label>
+                    <input type="text" id="b-subgrupo" placeholder="Descripción" readonly style="background:var(--table-header)">
+                </div>
+            </div>
+            
+            <div class="grid-form" style="margin-bottom: 16px;">
+                <div style="grid-column: span 2;">
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Descripción General Completa del Bien:</label>
+                    <input type="text" id="b-desc" placeholder="Detalle marca, color, materiales...">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Serial de Fábrica:</label>
+                    <input type="text" id="b-serial" placeholder="Serial o N/P">
+                </div>
+            </div>
+
+            <div class="grid-form" style="margin-bottom: 16px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Marca:</label>
+                    <input type="text" id="b-marca" placeholder="Ej: Dell, HP, Toyota">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Modelo:</label>
+                    <input type="text" id="b-modelo" placeholder="Ej: OptiPlex 7090">
+                </div>
+            </div>
+
+            <div class="grid-form" style="margin-bottom: 16px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Forma y Fecha de Adquisición:</label>
+                    <input type="date" id="b-fecha-adquisicion">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Nro. de Documento o Factura:</label>
+                    <input type="text" id="b-factura" placeholder="Nro. Factura / Orden">
+                </div>
+            </div>
+
+            <div class="grid-form" style="margin-bottom: 20px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Ubicación / Departamento:</label>
+                    <select id="b-dpto" class="select-dptos"><option value="">Departamento...</option></select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Responsable Asignado (Cédula / Nombre):</label>
+                    <select id="b-responsable" style="width:100%;"><option value="">Cargando personal...</option></select>
+                </div>
+            </div>
+
+            <div class="grid-form" style="margin-bottom: 20px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Valor de Adquisición ($):</label>
+                    <input type="number" id="b-valor" placeholder="0.00">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Método de Depreciación:</label>
+                    <select id="b-depreciacion">
+                        <option value="Línea Recta">Línea Recta</option>
+                        <option value="Unidades de Producción">Unidades de Producción</option>
+                        <option value="Suma de Dígitos">Suma de Dígitos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom: 6px;">Fotografías / Evidencias Físicas:</label>
+                <div class="custom-file-upload" onclick="document.getElementById('b-fotos').click()">
+                    <span class="material-icons" style="font-size: 28px; color: var(--primary);">add_a_photo</span>
+                    <p id="file-label-text" style="font-size: 13px; margin: 5px 0 0 0; font-weight: 500;">Haga clic para adjuntar (Se procesan y comprimen solas)</p>
+                </div>
+                <input type="file" id="b-fotos" accept="image/*" multiple style="display:none;" onchange="window.procesarImagenesComprimidas(this)">
                 <div id="preview-container" class="image-preview-grid"></div>
             </div>
 
-            <button onclick="addBien()" class="btn-primary mt-3">Guardar Bien en Inventario</button>
+            <button onclick="window.addBien()" class="btn-primary mt-3" id="btn-guardar" style="width: 100%; justify-content: center; padding: 12px;">Guardar Registro Institucional SUDEBIP</button>
         </div>
+        
         <div class="table-responsive mt-3">
-            <table>
-                <thead><tr><th>Código</th><th>Detalle / Serial</th><th>Ubicación</th><th>Estatus</th><th>Acciones</th></tr></thead>
-                <tbody id="tabla-bienes"></tbody>
-            </table>
+            <table><thead><tr><th>Cod. BCV</th><th>Cód. SUDEBIP</th><th>Descripción</th><th>Ubicación</th><th>Responsable</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody id="tabla-bienes"></tbody></table>
         </div>
     </main>
 </div>
 
-<!-- MODAL DE VISTA AMPLIADA DE DESCRIPCIÓN Y FOTOGRAFÍAS -->
-<div id="modal-detalle-bien" class="modal-overlay hidden">
+<!-- MODALES -->
+<div id="modal-visor-imagen" class="modal-overlay hidden">
+    <span class="material-icons" style="position:absolute; top:20px; right:20px; color:#fff; font-size:36px; cursor:pointer;" onclick="document.getElementById('modal-visor-imagen').classList.add('hidden')">close</span>
+    <img id="visor-img-src" src="">
+</div>
+
+<div id="modal-detalle-bien" class="modal-overlay hidden" style="z-index: 9000;">
     <div class="modal-card">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:18px; color:var(--primary); display:flex; align-items:center; gap:8px;">
-                <span class="material-icons">info</span> Descripción Completa y Evidencias del Activo
-            </h3>
-            <span class="material-icons" style="cursor:pointer; color:var(--text-muted); font-size:24px;" onclick="cerrarModalDetalle()">close</span>
+            <h3 style="margin:0; font-size:18px; color:var(--primary);"><span class="material-icons" style="vertical-align:middle;">assignment</span> Expediente Completo SUDEBIP</h3>
+            <span class="material-icons" style="cursor:pointer;" onclick="document.getElementById('modal-detalle-bien').classList.add('hidden')">close</span>
         </div>
         <div id="modal-contenido" style="font-size:14px; line-height:1.6;"></div>
-        <div style="margin-top:25px; text-align:right;">
-            <button onclick="cerrarModalDetalle()" class="btn-primary" style="padding:10px 20px;">Cerrar Ventana</button>
-        </div>
+        <div style="margin-top:25px; text-align:right;"><button onclick="document.getElementById('modal-detalle-bien').classList.add('hidden')" class="btn-primary">Cerrar Expediente</button></div>
     </div>
 </div>
 
-<!-- Modal Traspaso -->
 <div id="modal-traspaso" class="modal hidden">
     <div class="modal-content">
         <h3 style="margin-bottom: 15px; color: var(--primary);">Traspaso de Bien</h3>
         <input type="hidden" id="traspaso-bien-id">
-        <select id="traspaso-dpto-destino" class="select-dptos" style="margin-bottom: 20px;">
-            <option value="">Seleccione Departamento...</option>
-        </select>
+        <select id="traspaso-dpto-destino" class="select-dptos" style="margin-bottom: 20px;"><option value="">Seleccione Departamento Destino...</option></select>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button type="button" onclick="ejecutarTraspasoDirecto()" class="btn-primary">Enviar Traspaso</button>
-            <button type="button" onclick="cerrarTraspasoModal()" class="btn-danger">Cancelar</button>
+            <button onclick="window.ejecutarTraspasoDirecto()" class="btn-primary">Enviar Traspaso</button>
+            <button onclick="document.getElementById('modal-traspaso').classList.add('hidden')" class="btn-danger">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Enajenación -->
 <div id="modal-enajenacion" class="modal hidden">
     <div class="modal-content">
         <h3 style="margin-bottom: 15px; color: var(--primary);">Enajenación de Bien</h3>
         <input type="hidden" id="enajenacion-bien-id">
-        <input type="text" id="enajenacion-motivo" placeholder="Motivo (Venta, Donación, Destrucción...)" style="margin-bottom: 20px;">
+        <input type="text" id="enajenacion-motivo" placeholder="Motivo..." style="margin-bottom: 20px; width: 100%;">
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button onclick="ejecutarEnajenacionDirecta()" class="btn-warning">Procesar</button>
-            <button onclick="cerrarEnajenacionModal()" class="btn-danger">Cancelar</button>
+            <button onclick="window.ejecutarEnajenacionDirecta()" class="btn-warning">Procesar</button>
+            <button onclick="document.getElementById('modal-enajenacion').classList.add('hidden')" class="btn-danger">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Confirmación Desincorporación -->
 <div id="modal-desincorporar-confirm" class="modal hidden">
     <div class="modal-content" style="max-width: 400px; text-align: center; padding: 25px;">
         <span class="material-icons" style="font-size: 48px; color: var(--warning); margin-bottom: 10px;">warning</span>
-        <h3 style="margin-bottom: 10px; color: var(--text-main);">Desincorporar Bien</h3>
-        <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 14px;">¿Está seguro que desea desincorporar este bien?</p>
+        <h3 style="margin-bottom: 10px;">Desincorporar Bien</h3>
         <input type="hidden" id="desincorporar-bien-id">
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button onclick="confirmarDesincorporacionModal()" class="btn-danger" style="padding: 8px 16px;">Sí, Desincorporar</button>
-            <button onclick="cerrarModalDesincorporacion()" class="btn-primary" style="padding: 8px 16px;">Cancelar</button>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button onclick="window.confirmarDesincorporacionModal()" class="btn-danger">Sí, Confirmar Baja</button>
+            <button onclick="document.getElementById('modal-desincorporar-confirm').classList.add('hidden')" class="btn-primary">Cancelar</button>
         </div>
     </div>
 </div>
 
 <script src="/js/app.js"></script>
-<script src="/js/assets.js"></script>
+<script>
+    window.imagenesGlobalesBase64 = [];
+    let bienesCache = [];
+    let usuariosCache = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        window.cargarInventario();
+        try {
+            const [resDpto, resUser] = await Promise.all([ fetch('/api/departamentos', { headers: authHeaders() }), fetch('/api/usuarios', { headers: authHeaders() }) ]);
+            const dptos = await resDpto.json();
+            usuariosCache = await resUser.json();
+
+            const selects = document.querySelectorAll('.select-dptos');
+            selects.forEach(s => s.innerHTML = '<option value="">Departamento...</option>' + dptos.map(d => `<option value="${d.nombre}">${d.nombre}</option>`).join(''));
+
+            const selResp = document.getElementById('b-responsable');
+            selResp.innerHTML = '<option value="">Seleccione o busque responsable...</option>' + usuariosCache.map(u => `<option value="${u.nombre} (${u.cedula || 'S/C'})">Cédula: ${u.cedula || 'N/D'} - ${u.nombre} (${u.departamento || 'General'})</option>`).join('');
+        } catch(e){}
+    });
+
+    document.getElementById('b-sudebip').addEventListener('change', (e) => {
+        const val = e.target.value.split('|');
+        document.getElementById('b-grupo').value = val[0] ? val[0].trim() : '';
+        document.getElementById('b-subgrupo').value = val[1] ? val[1].trim() : '';
+    });
+
+    window.cargarInventario = async function() {
+        // Consultamos tanto el inventario activo como el histórico completo de desincorporados para el correlativo
+        const [resBienes, resDesinc] = await Promise.all([
+            fetch('/api/bienes', { headers: authHeaders() }),
+            fetch('/api/desincorporados', { headers: authHeaders() }).catch(() => ({ json: () => [] }))
+        ]);
+        
+        bienesCache = await resBienes.json();
+        const bienesDesinc = await resDesinc.json();
+        const todosLosRegistros = [...bienesCache, ...bienesDesinc];
+        
+        let maxBCV = 0;
+        todosLosRegistros.forEach(b => {
+            if(b.codigo_bien && b.codigo_bien.startsWith('BCV-')) {
+                let num = parseInt(b.codigo_bien.replace('BCV-', ''), 10);
+                if(!isNaN(num) && num > maxBCV) maxBCV = num;
+            }
+        });
+        
+        document.getElementById('b-codigo-inst').value = 'BCV-' + String(maxBCV + 1).padStart(5, '0');
+        window.renderTablaBienes(bienesCache);
+    };
+
+    window.renderTablaBienes = function(data) {
+        document.getElementById('tabla-bienes').innerHTML = data.map(b => `
+            <tr class="clickable-row" onclick="window.abrirDetalle(${b.id})">
+                <td><strong style="color:var(--primary);">${b.codigo_bien || '-'}</strong></td>
+                <td><strong>${b.codigo || '-'}</strong></td>
+                <td>${b.descripcion}<br><small>Marca: ${b.marca || 'N/D'} | Serial: ${b.serial || 'S/N'}</small></td>
+                <td>${b.departamento || 'General'}</td>
+                <td><span style="font-weight:600; color:var(--text-main);">${b.responsable || 'General'}</span></td>
+                <td><span class="badge badge-success">${b.estado || 'Activo'}</span></td>
+                <td onclick="event.stopPropagation()">
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <button onclick="window.abrirDetalle(${b.id})" class="btn-primary" style="padding:4px 8px; font-size:11px; background:#0284c7;">Ver</button>
+                        <button onclick="window.abrirTraspaso(${b.id})" class="btn-primary" style="padding:4px 8px; font-size:11px;">Traspasar</button>
+                        <button onclick="window.abrirDesincorporar(${b.id})" class="btn-danger" style="padding:4px 8px; font-size:11px;">Baja</button>
+                        <button onclick="window.abrirEnajenar(${b.id})" class="btn-warning" style="padding:4px 8px; font-size:11px;">Enajenar</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('') || `<tr><td colspan="7" style="text-align:center;">No hay bienes registrados.</td></tr>`;
+    };
+
+    window.filterBienes = function() {
+        const q = document.getElementById('search-input').value.toLowerCase();
+        window.renderTablaBienes(bienesCache.filter(b => (b.codigo_bien||'').toLowerCase().includes(q) || (b.codigo||'').toLowerCase().includes(q) || (b.descripcion||'').toLowerCase().includes(q) || (b.responsable||'').toLowerCase().includes(q) || (b.marca||'').toLowerCase().includes(q)));
+    };
+
+    window.procesarImagenesComprimidas = async function(input) {
+        const container = document.getElementById('preview-container'); container.innerHTML = '';
+        window.imagenesGlobalesBase64 = [];
+        if (!input.files || input.files.length === 0) return;
+        for(let file of input.files) {
+            await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image(); img.onload = () => {
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                        let w = img.width, h = img.height; const MAX = 900;
+                        if(w > h) { if(w > MAX) { h *= MAX/w; w = MAX; } } else { if(h > MAX) { w *= MAX/h; h = MAX; } }
+                        canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h);
+                        const b64 = canvas.toDataURL('image/jpeg', 0.75);
+                        window.imagenesGlobalesBase64.push(b64);
+                        container.innerHTML += `<div class="image-preview-item" onclick="window.verImagenAmpliada('${b64}')"><img src="${b64}"></div>`;
+                        resolve();
+                    }; img.src = e.target.result;
+                }; reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    window.addBien = async function() {
+        const codigo_institucional = document.getElementById('b-codigo-inst').value.trim();
+        const codigo_patrimonial = document.getElementById('b-grupo').value.trim();
+        const descripcion = document.getElementById('b-desc').value.trim();
+        const marca = document.getElementById('b-marca').value.trim();
+        const modelo = document.getElementById('b-modelo').value.trim();
+        const fecha_adquisicion = document.getElementById('b-fecha-adquisicion').value;
+        const factura = document.getElementById('b-factura').value.trim();
+        const depreciacion = document.getElementById('b-depreciacion').value;
+        const responsable = document.getElementById('b-responsable').value.trim() || 'General';
+
+        if(!codigo_institucional || !descripcion) return mostrarNotificacion("Código BCV y Descripción obligatorios.", "warning");
+
+        const payload = {
+            codigo_institucional,
+            codigo_patrimonial,
+            descripcion,
+            serial: document.getElementById('b-serial').value.trim(),
+            marca,
+            modelo,
+            fecha_adquisicion,
+            factura,
+            depreciacion,
+            departamento: document.getElementById('b-dpto').value || 'General',
+            responsable,
+            valor: document.getElementById('b-valor').value.trim() || 0,
+            imagenes: window.imagenesGlobalesBase64
+        };
+
+        const btn = document.getElementById('btn-guardar'); btn.disabled = true;
+        try {
+            const res = await fetch('/api/bienes', { method: 'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+            if(res.ok) {
+                mostrarNotificacion("Bien guardado exitosamente.", "success");
+                document.getElementById('b-sudebip').value='';
+                document.getElementById('b-grupo').value='';
+                document.getElementById('b-subgrupo').value='';
+                document.getElementById('b-desc').value='';
+                document.getElementById('b-serial').value='';
+                document.getElementById('b-marca').value='';
+                document.getElementById('b-modelo').value='';
+                document.getElementById('b-fecha-adquisicion').value='';
+                document.getElementById('b-factura').value='';
+                document.getElementById('b-valor').value='';
+                document.getElementById('preview-container').innerHTML='';
+                window.imagenesGlobalesBase64 = [];
+                window.cargarInventario();
+            } else {
+                const errData = await res.json();
+                mostrarNotificacion(errData.error || "Error al guardar el bien.", "error");
+            }
+        } catch(e) {
+            mostrarNotificacion("Error de red al guardar.", "error");
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    window.verImagenAmpliada = function(src) { document.getElementById('visor-img-src').src = src; document.getElementById('modal-visor-imagen').classList.remove('hidden'); };
+
+    window.abrirDetalle = function(id) {
+        const b = bienesCache.find(x => x.id === id); if(!b) return;
+        let fotosHtml = '<p style="color:var(--text-muted); font-style:italic;">No hay fotografías adjuntas.</p>';
+        if(b.imagenes) {
+            try {
+                const imgs = typeof b.imagenes === 'string' ? JSON.parse(b.imagenes) : b.imagenes;
+                if(Array.isArray(imgs) && imgs.length > 0) {
+                    fotosHtml = `<div class="image-preview-grid">${imgs.map(src => `<div class="image-preview-item" style="height:120px;" onclick="window.verImagenAmpliada('${src}')"><img src="${src}"></div>`).join('')}</div>`;
+                }
+            } catch(e) {}
+        }
+        document.getElementById('modal-contenido').innerHTML = `
+            <div style="background:var(--bg-main); padding:20px; border-radius:10px; border:1px solid var(--border); margin-bottom: 20px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><span style="color:var(--text-muted); font-size:12px;">Código BCV (Interno):</span><br><strong>${b.codigo_bien || '-'}</strong></div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Cód. SUDEBIP:</span><br><strong>${b.codigo || '-'}</strong></div>
+                    <div style="grid-column: span 2;"><span style="color:var(--text-muted); font-size:12px;">Descripción Completa:</span><br><strong>${b.descripcion || '-'}</strong></div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Marca / Modelo:</span><br>${b.marca || 'N/D'} / ${b.modelo || 'N/D'}</div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Serial de Fábrica:</span><br><code>${b.serial || 'S/N'}</code></div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Fecha Adquisición / Factura:</span><br>${b.fecha_adquisicion ? b.fecha_adquisicion.split('T')[0] : 'N/D'} (Doc: ${b.factura || 'N/D'})</div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Ubicación / Depto:</span><br>${b.departamento || 'General'}</div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Responsable Asignado:</span><br><strong style="color:var(--primary);">${b.responsable || 'General'}</strong></div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Depreciación:</span><br>${b.depreciacion || 'Línea Recta'}</div>
+                    <div><span style="color:var(--text-muted); font-size:12px;">Valor de Adquisición:</span><br><strong style="color:var(--success);">$${Number(b.valor || 0).toFixed(2)}</strong></div>
+                </div>
+            </div>
+            <h4 style="margin: 0 0 10px 0; font-size:14px;"><span class="material-icons" style="font-size:16px; vertical-align:middle;">photo_library</span> Fotografías del Activo:</h4>
+            ${fotosHtml}
+        `;
+        document.getElementById('modal-detalle-bien').classList.remove('hidden');
+    };
+
+    window.exportarXLSInventario = function() {
+        if(bienesCache.length === 0) return mostrarNotificacion("No hay bienes", "warning");
+        const filas = bienesCache.map(b => `<tr><td>${b.codigo_bien||'-'}</td><td>${b.codigo||'-'}</td><td>${b.descripcion}</td><td>${b.marca||'-'}</td><td>${b.modelo||'-'}</td><td>${b.serial||'S/N'}</td><td>${b.departamento||'General'}</td><td>${b.responsable||'General'}</td><td>${b.valor||0}</td></tr>`).join('');
+        const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table border="1"><tr><th>Cód. BCV</th><th>Cód. SUDEBIP</th><th>Descripción</th><th>Marca</th><th>Modelo</th><th>Serial</th><th>Depto</th><th>Responsable</th><th>Valor</th></tr>${filas}</table></body></html>`;
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Inventario_${new Date().toISOString().split('T')[0]}.xls`; a.click();
+    };
+
+    window.exportarPDFInventario = function() {
+        if(bienesCache.length === 0) return mostrarNotificacion("No hay bienes", "warning");
+        const win = window.open('', '_blank');
+        const filas = bienesCache.map(b => `<tr><td><b>${b.codigo_bien||'-'}</b></td><td>${b.codigo||'-'}</td><td>${b.descripcion}</td><td>${b.marca||'-'}</td><td>${b.serial||'S/N'}</td><td>${b.departamento||'General'}</td><td>${b.responsable||'General'}</td></tr>`).join('');
+        win.document.write(`<html><head><title>Inventario</title><style>body{font-family:sans-serif;margin:30px;font-size:11px;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:8px;text-align:left;} th{background:#1e3a8a;color:#fff;}</style></head><body><h2>Inventario Físico SUDEBIP</h2><table><tr><th>Cód. BCV</th><th>Cód. SUDEBIP</th><th>Descripción</th><th>Marca</th><th>Serial</th><th>Depto</th><th>Responsable</th></tr>${filas}</table><script>window.onload=()=>window.print();<\/script></body></html>`);
+        win.document.close();
+    };
+
+    window.abrirTraspaso = id => { document.getElementById('traspaso-bien-id').value = id; document.getElementById('modal-traspaso').classList.remove('hidden'); };
+    window.ejecutarTraspasoDirecto = async () => {
+        const id = document.getElementById('traspaso-bien-id').value; const dest = document.getElementById('traspaso-dpto-destino').value;
+        if(!dest) return mostrarNotificacion("Seleccione destino.", "warning");
+        await fetch(`/api/traspasar`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ id, departamento_destino: dest }) });
+        document.getElementById('modal-traspaso').classList.add('hidden'); window.cargarInventario(); mostrarNotificacion("Traspaso ejecutado.", "success");
+    };
+
+    window.abrirEnajenar = id => { document.getElementById('enajenacion-bien-id').value = id; document.getElementById('modal-enajenacion').classList.remove('hidden'); };
+    window.ejecutarEnajenacionDirecta = async () => {
+        const id = document.getElementById('enajenacion-bien-id').value; const motivo = document.getElementById('enajenacion-motivo').value;
+        await fetch(`/api/enajenar`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ id, motivo }) });
+        document.getElementById('modal-enajenacion').classList.add('hidden'); window.cargarInventario(); mostrarNotificacion("Enajenado.", "warning");
+    };
+
+    window.abrirDesincorporar = id => { document.getElementById('desincorporar-bien-id').value = id; document.getElementById('modal-desincorporar-confirm').classList.remove('hidden'); };
+    window.confirmarDesincorporacionModal = async () => {
+        const id = document.getElementById('desincorporar-bien-id').value;
+        await fetch(`/api/desincorporar/${id}`, { method: 'POST', headers: authHeaders() });
+        document.getElementById('modal-desincorporar-confirm').classList.add('hidden'); window.cargarInventario(); mostrarNotificacion("Desincorporado.", "success");
+    };
+</script>
 </body>
 </html>
